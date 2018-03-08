@@ -183,7 +183,7 @@ function! db#execute_command(bang, line1, line2, cmd) abort
     if empty(cmd) && !a:line2 && a:line1
       let cmd = db#adapter#dispatch(conn, 'interactive')
       if exists(':Start') == 2
-        silent execute 'Start' . escape(cmd, '%#')
+        silent execute 'Start' escape(cmd, '%#')
       else
         silent execute '!'.escape(cmd, '!%#')
         redraw!
