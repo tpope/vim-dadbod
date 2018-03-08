@@ -41,7 +41,7 @@ Give a range to run part or all of the current buffer as a query.
 
 Use `<` to pass in a filename.
 
-    :DB mongo:///test < big_query.js
+    :DB mongodb:///test < big_query.js
 
 There's also a special assignment syntax for saving a URL to a Vim variable
 for later use.
