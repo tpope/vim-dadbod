@@ -78,7 +78,7 @@ support:
 
 Like db.vim?  Star the repository on
 [GitHub](https://github.com/tpope/vim-db) and vote for it on
-[vim.org](https://www.vim.org/scripts/script.php?script_id=0).
+[vim.org](https://www.vim.org/scripts/script.php?script_id=5665).
 
 Love db.vim?  Follow [tpope](http://tpo.pe/) on
 [GitHub](https://github.com/tpope) and
