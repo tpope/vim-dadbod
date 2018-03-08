@@ -132,7 +132,7 @@ function! db#focus(url) abort
 endfunction
 
 function! s:reload() abort
-  execute 'silent !'.db#filter(b:db)
+  execute 'silent !'.escape(db#filter(b:db), '!%#')
         \ . ' < ' . shellescape(b:db_input)
         \ . ' > ' . expand('%:p')
         \ . ' 2>&1'
@@ -183,9 +183,9 @@ function! db#execute_command(bang, line1, line2, cmd) abort
     if empty(cmd) && !a:line2 && a:line1
       let cmd = db#adapter#dispatch(conn, 'interactive')
       if exists(':Start') == 2
-        silent execute 'Start' cmd
+        silent execute 'Start' . escape(cmd, '%#')
       else
-        silent execute '!'.cmd
+        silent execute '!'.escape(cmd, '!%#')
         redraw!
       endif
     else
@@ -212,10 +212,10 @@ function! db#execute_command(bang, line1, line2, cmd) abort
         call writefile(lines, infile)
       endif
       if &shellpipe =~# '[|>]&'
-        execute 'silent !'.db#filter(conn) . ' < ' . shellescape(infile)
+        execute 'silent !'.escape(db#filter(conn), '!%#') . ' < ' . shellescape(infile)
               \ . ' >& ' . outfile
       else
-        execute 'silent !'.db#filter(conn) . ' < ' . shellescape(infile)
+        execute 'silent !'.escape(db#filter(conn), '!%#') . ' < ' . shellescape(infile)
               \ . ' > ' . outfile . ' 2>&1'
       endif
       execute 'autocmd BufReadPost' fnameescape(outfile)
