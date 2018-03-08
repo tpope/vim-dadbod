@@ -60,9 +60,9 @@ Plugins can provide their own URL handlers as well.  For example,
 [heroku.vim][] provides support for `heroku:appname` style URLs.
 
 [dbext.vim]: http://www.vim.org/script.php?script_id=356
-[dotenv.vim]: https://tpope.io/vim/dotenv
-[heroku.vim]: https://tpope.io/vim/heroku
-[rails.vim]:  https://tpope.io/vim/rails
+[dotenv.vim]: https://tpope.io/vim/dotenv.git
+[heroku.vim]: https://tpope.io/vim/heroku.git
+[rails.vim]:  https://tpope.io/vim/rails.git
 
 ## Installation
 
@@ -77,7 +77,7 @@ support:
 ## Promotion
 
 Like db.vim?  Star the repository on
-[GitHub](https://tpope.io/vim/db) and vote for it on
+[GitHub](https://github.com/tpope/vim-db) and vote for it on
 [vim.org](https://www.vim.org/scripts/script.php?script_id=0).
 
 Love db.vim?  Follow [tpope](http://tpo.pe/) on
