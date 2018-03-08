@@ -1,0 +1,123 @@
+*db.txt*
+
+Author:  Tim Pope <http://tpo.pe/>
+Repo:    https://github.com/tpope/vim-db
+License: Same terms as Vim itself (see |license|)
+
+USAGE                                           *db* *:DB*
+
+:DB [url]               Start an interactive db console.  Uses dispatch.vim's
+                        |:Start| if available.
+
+:DB [url] {cmd}         Run {cmd} on the selected database and show the
+                        results in a preview window.
+
+:{range}DB [url]        Run the lines referenced by {range} on the selected
+                        database and show the results in a preview window.
+
+:DB [url] < {file}      Run the given {file} on the selected database and show
+                        the results in a preview window.
+
+:DB {var} = {url}       Assign the canonicalization of {url} to a |g:|, |w:|,
+                        |t:|, |b:|, or environment variable.
+
+In the preview window, you can press "R" to rerun, "r" to interactively rerun,
+or "q" to close the window.
+
+URLS                                            *db-urls*
+
+URLs are adapter specific but generally take one of two formats:
+>
+    adapter://[user[:password]@][host][:port]/[database]
+    adapter:[database]
+
+A complete reference is below under |db-adapters|, but a few examples should
+mostly get the point across:
+>
+    postgresql://postgres:secret@remote-host/test
+    mysql://root@localhost/test
+    sqlite:db.sqlite3
+    mongodb:///admin
+    redis:///
+<
+Additionally, one can give:
+
+* A Vim variable (e.g., g:foo, w:bar, t:baz, b:quux) or environment variable
+  (e.g., $DATABASE_URL) containing a URL.
+* File name of a supported database file (e.g. ~/db.sqlite3). Relative paths
+  must start with "./", and spaces must be %20 URL encoded (NOT backslash
+  escaped).
+
+VARIABLES                                       *db-variables*
+
+If a |w:|, |t:|, |b:|, |g:|, or $ENVIRONMENT variable is given as a URL, its
+value will be used.  Additionally, if no URL is given, the first of w:db,
+t:db, b:db, $DATABASE_URL, and g:db will be used.  Suggested uses:
+
+* w:db is best set interactively.
+* b:db is most useful when set from an |autocommand|.
+* g:db and other globals can be set in your |vimrc| or other startup file.
+* $DATABASE_URL and other environment variables are easy to set externally.
+
+Set a variable with |:let|, or use |:DB| to normalize the URL first:
+>
+    :DB w:db = adapter://...
+<
+ADAPTERS                                        *db-adapter*
+
+                                                *db-dbext*
+dbext ~
+>
+    dbext:type=<type>[:<attr>=<value>][...]
+    dbext:profile=<profile>[...]
+<
+For supported adapters, dbext modelines and profiles can be used directly.
+
+                                                *db-mongodb*
+MongoDB ~
+>
+    mongodb://[user[:password]@][host]/[database]
+    mongodb:[database]
+<
+                                                *db-mysql*
+MySQL ~
+>
+    mysql://[user[:password]@][host]/[database]
+    mysql://[user[:password]@][%2Fsocket%2Fpath]/[database]
+    mysql:[database]
+<
+
+                                                *db-postgresql*
+PostgreSQL ~
+>
+    postgresql://[user[:password]@][host]/[database]
+    postgresql://[user[:password]@][%2Fsocket%2Fpath]/[database]
+    postgresql:[database]
+<
+For interop, postgres:// URLs are also accepted.
+
+                                                *db-redis*
+Redis ~
+>
+    redis://[[unused[:password]@]host]/[database-number]
+    redis:[database-number]
+<
+Redis doesn't have a username, so use a dummy one in the URL if a password is
+required.
+
+                                                *db-sqlite*
+SQLite ~
+>
+    sqlite:relative/path
+    sqlite:/absolute/path
+    sqlite:C:/windows/path
+    sqlite:///relative/or/absolute/path
+<
+In the wild, uses of sqlite:///path vary on whether the path is relative or
+absolute, so both are checked.  The preferred form is sqlite:path, which
+avoids this ambiguity.
+
+An empty path portion uses an in-memory database, which is occasionally useful
+for an interactive invocation.
+
+ vim:tw=78:et:ft=help:norl:
