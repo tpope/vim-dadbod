@@ -49,7 +49,7 @@ for later use.
     :DB g:prod = postgres://user:pass@db.example.com/production_database
     :DB g:prod drop table users
 
-A few additonal URL like formats are accepted for interop:
+A few additional URL like formats are accepted for interop:
 
 * `:DB jdbc:postgresql://...`
 * `:DB dbext:profile_name`
