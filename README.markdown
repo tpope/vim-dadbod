@@ -26,8 +26,8 @@ by a plugin.
 Omit further arguments to spawn an interactive console (like `psql` or
 `redis-cli`).
 
-   :DB postgresql:///foobar
-   :DB redis:
+    :DB postgresql:///foobar
+    :DB redis:
 
 If additional arguments are provided, they are interpreted as a query string
 to pass to the database.  Results are displayed in a preview window.
