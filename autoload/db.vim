@@ -212,11 +212,9 @@ function! db#execute_command(bang, line1, line2, cmd) abort
         call writefile(lines, infile)
       endif
       if &shellpipe =~# '[|>]&'
-        execute 'silent !'.escape(db#filter(conn), '!%#') . ' < ' . shellescape(infile)
-              \ . ' >& ' . outfile
+        call system(db#filter(conn) . ' < ' . shellescape(infile) . ' >& ' . outfile)
       else
-        execute 'silent !'.escape(db#filter(conn), '!%#') . ' < ' . shellescape(infile)
-              \ . ' > ' . outfile . ' 2>&1'
+        call system(db#filter(conn) . ' < ' . shellescape(infile) . ' > ' . outfile . ' 2>&1')
       endif
       execute 'autocmd BufReadPost' fnameescape(outfile)
             \ 'let b:db_input =' string(infile)
