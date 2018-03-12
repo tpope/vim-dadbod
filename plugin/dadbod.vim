@@ -1,7 +1,7 @@
-" db.vim
+" dadbod.vim
 " Maintainer:   Tim Pope <http://tpo.pe/>
 " Version:      1.0
-" GetLatestVimScripts: 5665 1 :AutoInstall: db.vim
+" GetLatestVimScripts: 5665 1 :AutoInstall: dadbod.vim
 
 if exists('g:loaded_db') || &cp || v:version < 700
   finish

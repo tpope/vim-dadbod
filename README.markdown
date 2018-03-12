@@ -1,7 +1,7 @@
-# db.vim
+# dadbod.vim
 
-DB is a Vim plugin for interacting with databases.  It's a more modern take on
-[dbext.vim][], improving on it on the following ways:
+Dadbod is a Vim plugin for interacting with databases.  It's a more modern
+take on [dbext.vim][], improving on it on the following ways:
 
 * Connections are specified with a single URL, rather than prompting you for
   14 separate variables
@@ -71,16 +71,16 @@ support:
 
     mkdir -p ~/.vim/pack/tpope/start
     cd ~/.vim/pack/tpope/start
-    git clone https://tpope.io/vim/db.git
-    vim -u NONE -c "helptags db/doc" -c q
+    git clone https://tpope.io/vim/dadbod.git
+    vim -u NONE -c "helptags dadbod/doc" -c q
 
 ## Promotion
 
-Like db.vim?  Star the repository on
-[GitHub](https://github.com/tpope/vim-db) and vote for it on
+Like dadbod.vim?  Star the repository on
+[GitHub](https://github.com/tpope/vim-dadbod) and vote for it on
 [vim.org](https://www.vim.org/scripts/script.php?script_id=5665).
 
-Love db.vim?  Follow [tpope](http://tpo.pe/) on
+Love dadbod.vim?  Follow [tpope](http://tpo.pe/) on
 [GitHub](https://github.com/tpope) and
 [Twitter](http://twitter.com/tpope).
 

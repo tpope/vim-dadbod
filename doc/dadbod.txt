@@ -1,13 +1,13 @@
-*db.txt*
+*dadbod.txt*
 
 Author:  Tim Pope <http://tpo.pe/>
-Repo:    https://github.com/tpope/vim-db
+Repo:    https://github.com/tpope/vim-dadbod
 License: Same terms as Vim itself (see |license|)
 
-USAGE                                           *db* *:DB*
+USAGE                                           *dadbod* *:DB*
 
-:DB [url]               Start an interactive db console.  Uses dispatch.vim's
-                        |:Start| if available.
+:DB [url]               Start an interactive database console.  Uses
+                        dispatch.vim's |:Start| if available.
 
 :DB [url] {cmd}         Run {cmd} on the selected database and show the
                         results in a preview window.
@@ -24,14 +24,14 @@ USAGE                                           *db* *:DB*
 In the preview window, you can press "R" to rerun, "r" to interactively rerun,
 or "q" to close the window.
 
-URLS                                            *db-urls*
+URLS                                            *dadbod-urls*
 
 URLs are adapter specific but generally take one of two formats:
 >
     adapter://[user[:password]@][host][:port]/[database]
     adapter:[database]
 
-A complete reference is below under |db-adapters|, but a few examples should
+A complete reference is below under |dadbod-adapters|, but a few examples should
 mostly get the point across:
 >
     postgresql://postgres:secret@remote-host/test
@@ -48,7 +48,7 @@ Additionally, one can give:
   must start with "./", and spaces must be %20 URL encoded (NOT backslash
   escaped).
 
-VARIABLES                                       *db-variables*
+VARIABLES                                       *dadbod-variables*
 
 If a |w:|, |t:|, |b:|, |g:|, or $ENVIRONMENT variable is given as a URL, its
 value will be used.  Additionally, if no URL is given, the first of w:db,
@@ -63,9 +63,9 @@ Set a variable with |:let|, or use |:DB| to normalize the URL first:
 >
     :DB w:db = adapter://...
 <
-ADAPTERS                                        *db-adapter*
+ADAPTERS                                        *dadbod-adapters*
 
-                                                *db-dbext*
+                                                *dadbod-dbext*
 dbext ~
 >
     dbext:type=<type>[:<attr>=<value>][...]
@@ -73,13 +73,13 @@ dbext ~
 <
 For supported adapters, dbext modelines and profiles can be used directly.
 
-                                                *db-mongodb*
+                                                *dadbod-mongodb*
 MongoDB ~
 >
     mongodb://[user[:password]@][host]/[database]
     mongodb:[database]
 <
-                                                *db-mysql*
+                                                *dadbod-mysql*
 MySQL ~
 >
     mysql://[user[:password]@][host]/[database]
@@ -87,7 +87,7 @@ MySQL ~
     mysql:[database]
 <
 
-                                                *db-postgresql*
+                                                *dadbod-postgresql*
 PostgreSQL ~
 >
     postgresql://[user[:password]@][host]/[database]
@@ -96,7 +96,7 @@ PostgreSQL ~
 <
 For interop, postgres:// URLs are also accepted.
 
-                                                *db-redis*
+                                                *dadbod-redis*
 Redis ~
 >
     redis://[[unused[:password]@]host]/[database-number]
@@ -105,7 +105,7 @@ Redis ~
 Redis doesn't have a username, so use a dummy one in the URL if a password is
 required.
 
-                                                *db-sqlite*
+                                                *dadbod-sqlite*
 SQLite ~
 >
     sqlite:relative/path
