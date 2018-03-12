@@ -26,7 +26,7 @@ function! db#adapter#mysql#interactive(url) abort
 endfunction
 
 function! db#adapter#mysql#filter(url) abort
-  return db#adapter#mysql#interactive(a:url) . ' -t'
+  return s:command_for_url(a:url) . ' -t'
 endfunction
 
 function! db#adapter#mysql#auth_pattern() abort
@@ -45,5 +45,5 @@ function! db#adapter#mysql#complete_database(url) abort
 endfunction
 
 function! db#adapter#mysql#tables(url) abort
-  return split(system(db#adapter#mysql#interactive(a:url). ' -e "show tables"'), "\n")[1:-1]
+  return split(system(s:command_for_url(a:url). ' -e "show tables"'), "\n")[1:-1]
 endfunction
