@@ -42,6 +42,7 @@ function! db#adapter#dbext#canonicalize(url) abort
   call s:transfer(in, out, 'passwd', 'password')
   let out.path = '/' . tr(get(out, 'path', ''), '\', '/')
   call s:transfer(in, out, 'host', 'host')
+  call s:transfer(in, out, 'port', 'port')
   let match = matchlist(get(in, 'srvname', '%'), '^\%(//\)\=\([[:alnum:]\\_-]*\)\%(:\(\d\+\)\)\=\(/[[:alnum:]_-]*\)\=$')
   if !has_key(out, 'host') && !empty(match)
     let out.host = match[1]
