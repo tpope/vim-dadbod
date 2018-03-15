@@ -211,7 +211,7 @@ function! db#execute_command(bang, line1, line2, cmd) abort
       if exists('lines')
         call writefile(lines, infile)
       endif
-      if &shellpipe =~# '[|>]&'
+      if &shellpipe =~# '[|>]&\d\@!'
         call system(db#filter(conn) . ' < ' . shellescape(infile) . ' >& ' . outfile)
       else
         call system(db#filter(conn) . ' < ' . shellescape(infile) . ' > ' . outfile . ' 2>&1')
