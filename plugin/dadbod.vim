@@ -15,5 +15,16 @@ call extend(g:db_adapters, {
       \ 'postgres': 'postgresql',
       \ }, 'keep')
 
+call extend(g:, {'dbext_schemes': {}}, 'keep')
+
+call extend(g:dbext_schemes, {
+      \ 'ASA': 'sybase',
+      \ 'MYSQL': 'mysql',
+      \ 'ORA': 'oracle',
+      \ 'PGSQL': 'postgresql',
+      \ 'SQLITE': 'sqlite',
+      \ 'SQLSRV': 'sqlserver',
+      \ }, 'keep')
+
 command! -bang -nargs=? -count=0 -complete=custom,db#command_complete DB
       \ execute db#execute_command(<bang>0, <line1>, <count>, <q-args>)
