@@ -3,10 +3,10 @@
 " Version:      1.0
 " GetLatestVimScripts: 5665 1 :AutoInstall: dadbod.vim
 
-if exists('g:loaded_db') || &cp || v:version < 700
+if exists('g:loaded_dadbod') || &cp || v:version < 700
   finish
 endif
-let g:loaded_db = 1
+let g:loaded_dadbod = 1
 
 call extend(g:, {'db_adapters': {}}, 'keep')
 
