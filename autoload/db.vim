@@ -211,11 +211,12 @@ function! db#execute_command(bang, line1, line2, cmd) abort
       if exists('lines')
         call writefile(lines, infile)
       endif
-      if &shellpipe =~# '[|>]&\d\@!'
-        call system(db#filter(conn) . ' < ' . shellescape(infile) . ' >& ' . outfile)
+      if exists('*systemlist')
+        let lines = systemlist(db#filter(conn) . ' < ' . shellescape(infile))
       else
-        call system(db#filter(conn) . ' < ' . shellescape(infile) . ' > ' . outfile . ' 2>&1')
+        let lines = split(system(db#filter(conn) . ' < ' . shellescape(infile)), "\n", 1)
       endif
+      call writefile(lines, outfile, 'b')
       execute 'autocmd BufReadPost' fnameescape(outfile)
             \ 'let b:db_input =' string(infile)
             \ '| let b:db =' string(conn)
