@@ -13,14 +13,14 @@ function! db#adapter#postgresql#canonicalize(url) abort
         \ 'dbname': 'database'})
 endfunction
 
-function! db#adapter#postgresql#interactive(url) abort
+function! db#adapter#postgresql#interactive(url, ...) abort
   let short = matchstr(a:url, '^[^:]*:\%(///\)\=\zs[^/?#]*$')
-  return 'psql -w ' . shellescape(len(short) ? short : a:url)
+  return 'psql -w ' . (a:0 ? a:1 . ' ' : '') . shellescape(len(short) ? short : a:url)
 endfunction
 
 function! db#adapter#postgresql#filter(url) abort
-  return db#adapter#postgresql#interactive(a:url) .
-        \ ' -P columns=' . &columns . ' -v ON_ERROR_STOP=1 -f -'
+  return db#adapter#postgresql#interactive(a:url,
+        \ '-P columns=' . &columns . ' -v ON_ERROR_STOP=1 -f -')
 endfunction
 
 function! s:parse_columns(output) abort
