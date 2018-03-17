@@ -76,7 +76,7 @@ For supported adapters, dbext modelines and profiles can be used directly.
                                                 *dadbod-mongodb*
 MongoDB ~
 >
-    mongodb://[user[:password]@][host]/[database]
+    mongodb://[user[:password]@][host]/[database][?ssl=true]
     mongodb:[database]
 <
                                                 *dadbod-mysql*
