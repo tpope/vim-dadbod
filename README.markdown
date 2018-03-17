@@ -16,6 +16,9 @@ take on [dbext.vim][], improving on it on the following ways:
   - Your own easily implemented adapter
 * Easily configurable based on a project directory (as seen in [rails.vim][],
   for example), rather than just globally or in a per-file modeline
+* For those that just can't live without some piece of dbext functionality,
+  the option `g:dadbod_manage_dbext` is provided to force dbext to use
+  Dadbod's default database.
 
 ## Usage
 

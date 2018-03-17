@@ -28,3 +28,17 @@ call extend(g:dbext_schemes, {
 
 command! -bang -nargs=? -count=0 -complete=custom,db#command_complete DB
       \ execute db#execute_command(<bang>0, <line1>, <count>, <q-args>)
+
+function! s:manage_dbext() abort
+  return get(b:, 'dadbod_manage_dbext', get(g:, 'dadbod_manage_dbext'))
+endfunction
+
+augroup dadbod
+  autocmd!
+  autocmd User dbextPreConnection
+        \ if s:manage_dbext() | call db#clobber_dbext() | endif
+  autocmd BufNewFile Result,Result-*
+        \ if s:manage_dbext() && getbufvar('#', 'dbext_buffer_defaulted') |
+        \   call setbufvar('#', 'dbext_buffer_defaulted', "0-by-dadbod") |
+        \ endif
+augroup END

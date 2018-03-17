@@ -17,7 +17,7 @@ function! s:expand_all(str) abort
   return substitute(a:str, s:expandable, '\=s:expand(submatch(0))', 'g')
 endfunction
 
-function! db#resolve(url) abort
+function! s:resolve(url) abort
   if empty(a:url)
     let url = s:expand_all('$DATABASE_URL')
     if url ==# '$DATABASE_URL'
@@ -75,6 +75,11 @@ function! db#resolve(url) abort
   if url =~# '^file:'
     throw 'DB: no adapter for file '.url[5:-1]
   endif
+  return url
+endfunction
+
+function! s:canonicalize(url) abort
+  let url = a:url
   let old = ''
   let c = 20
   while c && url !=# old
@@ -90,6 +95,10 @@ function! db#resolve(url) abort
     return url
   endif
   throw 'DB: infinite loop resolving URL'
+endfunction
+
+function! db#resolve(url)
+  return s:canonicalize(s:resolve(a:url))
 endfunction
 
 function! db#filter(url) abort
@@ -313,4 +322,41 @@ function! db#command_complete(A, L, P) abort
     return join(db#url_complete(a:A), "\n")
   endif
   return ""
+endfunction
+
+let s:dbext_vars = ['type', 'profile', 'bin', 'user', 'passwd', 'dbname', 'srvname', 'host', 'port', 'dsnname', 'extra', 'integratedlogin', 'buffer_defaulted']
+function! db#clobber_dbext() abort
+  let url = s:resolve('')
+  if url =~# '^dbext:'
+    let opts = db#adapter#dbext#parse(url)
+    let parsed = {}
+  else
+    let url = s:canonicalize(url)
+    if empty(url)
+      for key in s:dbext_vars
+        unlet! b:dbext_{key}
+      endfor
+      return
+    endif
+    let parsed = db#url#parse(url)
+    let opts = db#adapter#call(url, 'dbext', [url], {})
+    call extend(opts, {
+          \ 'type': toupper(parsed.scheme),
+          \ 'dbname': get(parsed, 'opaque', get(parsed, 'path', '')[1:-1]),
+          \ 'host': get(parsed, 'host', ''),
+          \ 'port': get(parsed, 'port', ''),
+          \ 'user': get(parsed, 'user', ''),
+          \ 'passwd': get(parsed, 'password', ''),
+          \ 'buffer_defaulted': 1}, 'keep')
+    for [dbext, dadbod] in items(g:dbext_schemes)
+      if toupper(dadbod) == opts.type
+        let opts.type = dbext
+        break
+      endif
+    endfor
+  endif
+  for key in s:dbext_vars
+    echo 'let b:dbext_'.key.' = '.string(get(opts, key, get(get(parsed, 'params', {}), key, '')))
+    let b:dbext_{key} = get(opts, key, get(get(parsed, 'params', {}), key, ''))
+  endfor
 endfunction

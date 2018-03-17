@@ -120,4 +120,12 @@ avoids this ambiguity.
 An empty path portion uses an in-memory database, which is occasionally useful
 for an interactive invocation.
 
+DBEXT MANAGEMENT                                *g:dadbod_manage_dbext*
+
+If you like Dadbod's configuration but need some of dbext's functionality, set
+the following variable to enable an experimental mode where dbext's
+configuration always mirrors Dadbod's default.
+>
+  let g:dadbod_manage_dbext = 1
+<
  vim:tw=78:et:ft=help:norl:
