@@ -16,7 +16,9 @@ function! db#adapter#mongodb#output_extension() abort
 endfunction
 
 function! db#adapter#mongodb#interactive(url) abort
-  return 'mongo' . db#url#as_args(a:url, '--host ', '--port ', '', '-u ', '-p ', '')
+  let url = db#url#parse(a:url)
+  return 'mongo' . (get(url.params, 'ssl') =~# '^[1t]' ? ' --ssl' : '') .
+        \ db#url#as_args(url, '--host ', '--port ', '', '-u ', '-p ', '')
 endfunction
 
 function! db#adapter#mongodb#filter(url) abort
