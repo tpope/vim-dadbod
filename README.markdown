@@ -12,7 +12,7 @@ take on [dbext.vim][], improving on it on the following ways:
   - MySQL
   - PostgreSQL
   - Redis
-  - Sqlite
+  - SQLite
   - Your own easily implemented adapter
 * Easily configurable based on a project directory (as seen in [rails.vim][],
   for example), rather than just globally or in a per-file modeline
