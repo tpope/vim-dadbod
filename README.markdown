@@ -52,7 +52,7 @@ for later use.
 A few additional URL like formats are accepted for interop:
 
 * `:DB jdbc:postgresql://...`
-* `:DB dbext:profile_name`
+* `:DB dbext:profile=profile_name`
 * `:DB dbext:type=PGSQL:host=...`
 * `:DB $DATABASE_URL` (with optional [dotenv.vim][] support)
 
