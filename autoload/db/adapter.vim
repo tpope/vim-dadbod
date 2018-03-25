@@ -36,7 +36,11 @@ function! s:fnname(adapter, fn) abort
 endfunction
 
 function! db#adapter#supports(adapter, fn) abort
-  return exists('*'.s:fnname(a:adapter, a:fn))
+  try
+    return exists('*'.s:fnname(a:adapter, a:fn))
+  catch /^DB: no adapter for /
+    return 0
+  endtry
 endfunction
 
 function! db#adapter#call(adapter, fn, args, ...) abort
