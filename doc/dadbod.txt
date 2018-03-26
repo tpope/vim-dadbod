@@ -21,6 +21,10 @@ USAGE                                           *dadbod* *:DB*
 :DB {var} = {url}       Assign the canonicalization of {url} to a |g:|, |w:|,
                         |t:|, |b:|, or environment variable.
 
+:DB [url] :{command}    Run the Vim command {command} with the given URL set
+                        as the default.  This is mainly useful with
+                        |g:dadbod_manage_dbext|.
+
 In the preview window, you can press "R" to rerun, "r" to interactively rerun,
 or "q" to close the window.
 

@@ -29,6 +29,9 @@ function! s:resolve(url) abort
         break
       endif
     endfor
+    if exists('s:db')
+      let url = s:db
+    endif
   else
     let url = a:url
   endif
@@ -167,6 +170,10 @@ function! s:init() abort
   nnoremap <buffer><silent> R :call <SID>reload()<CR>
 endfunction
 
+function! db#unlet() abort
+  unlet! s:db
+endfunction
+
 function! db#execute_command(bang, line1, line2, cmd) abort
   let [url, cmd] = s:cmd_split(a:cmd)
   try
@@ -188,6 +195,10 @@ function! db#execute_command(bang, line1, line2, cmd) abort
     let conn = db#connect(url)
     if empty(conn)
       return 'echoerr "DB: no URL given and no default connection"'
+    endif
+    if cmd =~# '^:'
+      let s:db = conn
+      return 'try|execute '.string(cmd).'|finally|call db#unlet()|endtry'
     endif
     if empty(cmd) && !a:line2 && a:line1
       let cmd = db#adapter#dispatch(conn, 'interactive')
