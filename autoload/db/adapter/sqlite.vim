@@ -13,7 +13,7 @@ function! db#adapter#sqlite#test_file(file) abort
   endif
 endfunction
 
-function! db#adapter#sqlite#command(url) abort
+function! s:path(url) abort
   let path = db#url#file_path(a:url)
   if path =~# '^[\/]\=$'
     if !exists('s:session')
@@ -21,7 +21,15 @@ function! db#adapter#sqlite#command(url) abort
     endif
     let path = s:session
   endif
-  return 'sqlite3 ' . shellescape(path)
+  return path
+endfunction
+
+function! db#adapter#sqlite#dbext(url) abort
+  return {'dbname': s:path(a:url)}
+endfunction
+
+function! db#adapter#sqlite#command(url) abort
+  return 'sqlite3 ' . shellescape(s:path(a:url))
 endfunction
 
 function! db#adapter#sqlite#interactive(url) abort
