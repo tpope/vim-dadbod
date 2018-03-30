@@ -18,7 +18,12 @@ function! db#url#parse(url) abort
   let params = {}
   for item in split(matchstr(url, '?\zs.*', ''), '[&;]')
     let [k, v; _] = split(item, '=') + ['', '']
-    let params[k] = db#url#decode(tr(v, '+', ' '))
+    let v = db#url#decode(tr(v, '+', ' '))
+    if has_key(params, k)
+      let params[k] .= "\f" . v
+    else
+      let params[k] = v
+    endif
   endfor
   let url = substitute(a:url, '?.*', '', '')
   let scheme = '^\([[:alnum:].+-]\+\)'
@@ -169,7 +174,7 @@ function! db#url#format(url) abort
   if !empty(get(a:url, 'params'))
     let url .= '?'
     let url .= join(map(sort(keys(a:url.params)),
-          \ 'v:val."=".substitute(db#url#encode(a:url.params[v:val]), "%20", "+", "g")'), '&')
+          \ 'v:val."=".substitute(substitute(db#url#encode(a:url.params[v:val]), "%20", "+", "g"),"%0[Cc]","\\&".v:val."=","g")'), '&')
   elseif has_key(a:url, 'query')
     let url .= '?' . a:url.query
   endif
