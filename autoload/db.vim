@@ -129,7 +129,7 @@ function! db#connect(url) abort
   let input = db#adapter#call(url, 'auth_input', [], "\n")
   let pattern = db#adapter#call(url, 'auth_pattern', [], 'auth\|login')
   let out = substitute(system(s:filter(url), input), "\n$", '', '')
-  if v:shell_error && out =~# pattern && resolved =~# '^[^:]*://[^:/@]*@'
+  if v:shell_error && out =~? pattern && resolved =~# '^[^:]*://[^:/@]*@'
     let password = inputsecret('Password: ')
     let url = substitute(resolved, '://[^:/@]*\zs@', ':'.db#url#encode(password).'@', '')
     let out = substitute(system(s:filter(url), input), "\n$", '', '')
