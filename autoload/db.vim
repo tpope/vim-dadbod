@@ -132,17 +132,6 @@ function! db#connect(url) abort
   throw 'DB exec error: '.out
 endfunction
 
-function! db#focus(url) abort
-  try
-    if empty(a:url)
-      unlet! w:db
-    endif
-    let w:db = db#connect(a:url)
-  catch /^DB: /
-    return 'echoerr '.string(v:exception)
-  endtry
-endfunction
-
 function! s:reload() abort
   execute 'silent !'.escape(db#filter(b:db), '!%#')
         \ . ' < ' . shellescape(b:db_input)
