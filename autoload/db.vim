@@ -148,7 +148,7 @@ function! s:reload() abort
   edit!
 endfunction
 
-let s:url_pattern = '\%([[:alnum:].+-]\+:\S*\|\$[[:alpha:]_]\S*\|[.~]\=/\S*\|[.~]\|\%(type\|profile\)=\S\+\)\S\@!'
+let s:url_pattern = '\%([abgltvw]:\w\+\|\a[[:alnum:].+-]\+:\S*\|\$[[:alpha:]_]\S*\|[.~]\=/\S*\|[.~]\|\%(type\|profile\)=\S\+\)\S\@!'
 function! s:cmd_split(cmd) abort
   let url = matchstr(a:cmd, '^'.s:url_pattern)
   let cmd = substitute(a:cmd, '^'.s:url_pattern.'\s*', '', '')
@@ -172,6 +172,10 @@ function! db#unlet() abort
 endfunction
 
 function! db#execute_command(bang, line1, line2, cmd) abort
+  if type(a:cmd) == type(0)
+    " Error generating arguments
+    return ''
+  endif
   let [url, cmd] = s:cmd_split(a:cmd)
   try
     if cmd =~# '^='
@@ -181,11 +185,9 @@ function! db#execute_command(bang, line1, line2, cmd) abort
       elseif url =~ '^\w:$'
         let url .= 'db'
       endif
-      if url =~# '^\%([bgtw]:\|\$\)\h\w*$'
+      if url =~# '^\%([abgltwv]:\|\$\)\w\+$'
         let target = db#connect(target)
-        exe 'let '.url.' = target'
-        echo ':let ' . url . ' = '.string(target)
-        return ''
+        return 'let ' . url . ' = '.string(target)
       endif
       throw 'DB: invalid variable: '.url
     endif
@@ -271,7 +273,7 @@ endfunction
 function! db#url_complete(A) abort
   if a:A !~# ':'
     return map(db#adapter#schemes(), 'v:val . ":"')
-  elseif a:A =~# '^[wtbg]:'
+  elseif a:A =~# '^[bgtvw]:'
     let ns = matchstr(a:A, '^.:')
     let dict = eval(ns)
     let valid = '^\%(file\|' . escape(join(db#adapter#schemes() + keys(g:db_adapters), '\|'), '.') . '\):'
