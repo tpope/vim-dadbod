@@ -141,8 +141,8 @@ function! db#url#format(url) abort
   if type(a:url) == type('')
     return a:url
   endif
-  if has_key(a:url, 'opaque')
-    let url = a:url.scheme . ':' . a:url.opaque
+  if has_key(a:url, 'opaque') || !has_key(a:url, 'path')
+    let url = a:url.scheme . ':' . get(a:url, 'opaque', '')
   else
     let url = a:url.scheme . '://'
   endif
