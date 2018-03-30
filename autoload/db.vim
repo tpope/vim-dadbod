@@ -104,9 +104,20 @@ function! db#resolve(url)
   return s:canonicalize(s:resolve(a:url))
 endfunction
 
-function! db#filter(url) abort
+function! s:filter(url) abort
   let op = db#adapter#supports(a:url, 'filter') ? 'filter' : 'interactive'
   return db#adapter#dispatch(a:url, op)
+endfunction
+
+function! s:filter_write(url, in, out) abort
+  let cmd = s:filter(a:url) . ' ' .
+        \ db#adapter#call(a:url, 'input_flag', [], '< ') . shellescape(a:in)
+  if exists('*systemlist')
+    let lines = systemlist(cmd)
+  else
+    let lines = split(system(cmd), "\n", 1)
+  endif
+  call writefile(lines, a:out, 'b')
 endfunction
 
 function! db#connect(url) abort
@@ -117,11 +128,11 @@ function! db#connect(url) abort
   endif
   let input = db#adapter#call(url, 'auth_input', [], "\n")
   let pattern = db#adapter#call(url, 'auth_pattern', [], 'auth\|login')
-  let out = substitute(system(db#filter(url), input), "\n$", '', '')
+  let out = substitute(system(s:filter(url), input), "\n$", '', '')
   if v:shell_error && out =~# pattern && resolved =~# '^[^:]*://[^:/@]*@'
     let password = inputsecret('Password: ')
     let url = substitute(resolved, '://[^:/@]*\zs@', ':'.db#url#encode(password).'@', '')
-    let out = substitute(system(db#filter(url), input), "\n$", '', '')
+    let out = substitute(system(s:filter(url), input), "\n$", '', '')
     if !v:shell_error
       let s:passwords[resolved] = password
     endif
@@ -133,10 +144,7 @@ function! db#connect(url) abort
 endfunction
 
 function! s:reload() abort
-  execute 'silent !'.escape(db#filter(b:db), '!%#')
-        \ . ' < ' . shellescape(b:db_input)
-        \ . ' > ' . expand('%:p')
-        \ . ' 2>&1'
+  call s:filter_write(b:db, b:db_input, expand('%:p'))
   edit!
 endfunction
 
@@ -220,12 +228,7 @@ function! db#execute_command(bang, line1, line2, cmd) abort
       if exists('lines')
         call writefile(lines, infile)
       endif
-      if exists('*systemlist')
-        let lines = systemlist(db#filter(conn) . ' < ' . shellescape(infile))
-      else
-        let lines = split(system(db#filter(conn) . ' < ' . shellescape(infile)), "\n", 1)
-      endif
-      call writefile(lines, outfile, 'b')
+      call s:filter_write(conn, infile, outfile)
       execute 'autocmd BufReadPost' fnameescape(outfile)
             \ 'let b:db_input =' string(infile)
             \ '| let b:db =' string(conn)
