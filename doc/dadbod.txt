@@ -90,6 +90,12 @@ MySQL ~
     mysql://[<user>[:<password>]@][<%2Fsocket%2Fpath>]/[<database>]
     mysql:[<database>]
 <
+                                                *dadbod-oracle*
+Oracle ~
+>
+    oracle://[<user>[:<password>]@][<host>][:<port>]/[<database>]
+    oracle:<user>/<password>@[//]<host>[:<port>]/<database>
+<
                                                 *dadbod-postgresql*
 PostgreSQL ~
 >
