@@ -328,8 +328,8 @@ function! db#command_complete(A, L, P) abort
 endfunction
 
 let s:dbext_vars = ['type', 'profile', 'bin', 'user', 'passwd', 'dbname', 'srvname', 'host', 'port', 'dsnname', 'extra', 'integratedlogin', 'buffer_defaulted']
-function! db#clobber_dbext() abort
-  let url = s:resolve('')
+function! db#clobber_dbext(...) abort
+  let url = s:resolve(a:0 ? a:1 : '')
   if url =~# '^dbext:'
     let opts = db#adapter#dbext#parse(url)
     let parsed = {}
@@ -359,7 +359,8 @@ function! db#clobber_dbext() abort
     endfor
   endif
   for key in s:dbext_vars
-    echo 'let b:dbext_'.key.' = '.string(get(opts, key, get(get(parsed, 'params', {}), key, '')))
-    let b:dbext_{key} = get(opts, key, get(get(parsed, 'params', {}), key, ''))
+    let value = get(opts, key, get(get(parsed, 'params', {}), key, ''))
+    let b:dbext_{key} = value
   endfor
+  return opts
 endfunction
