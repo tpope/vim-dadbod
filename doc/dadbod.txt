@@ -80,31 +80,30 @@ For supported adapters, dbext modelines and profiles can be used directly.
                                                 *dadbod-mongodb*
 MongoDB ~
 >
-    mongodb://[user[:password]@][host]/[database][?ssl=true]
-    mongodb:[database]
+    mongodb://[<user>[:<password>]@][<host>[:<port>]]/[<database>][?ssl=true]
+    mongodb:[<database>]
 <
                                                 *dadbod-mysql*
 MySQL ~
 >
-    mysql://[user[:password]@][host]/[database]
-    mysql://[user[:password]@][%2Fsocket%2Fpath]/[database]
-    mysql:[database]
+    mysql://[<user>[:<password>]@][<host>[:<port>]]/[database]
+    mysql://[<user>[:<password>]@][<%2Fsocket%2Fpath>]/[<database>]
+    mysql:[<database>]
 <
-
                                                 *dadbod-postgresql*
 PostgreSQL ~
 >
-    postgresql://[user[:password]@][host]/[database]
-    postgresql://[user[:password]@][%2Fsocket%2Fpath]/[database]
-    postgresql:[database]
+    postgresql://[<user>[:<password>]@][<host>[:<port>]]/[<database>]
+    postgresql://[<user>[:<password>]@][<%2Fsocket%2Fpath>]/[<database>]
+    postgresql:[<database>]
 <
 For interop, postgres:// URLs are also accepted.
 
                                                 *dadbod-redis*
 Redis ~
 >
-    redis://[[unused[:password]@]host]/[database-number]
-    redis:[database-number]
+    redis://[[unused[:<password>]@]<host>]/[<database-number>]
+    redis:[<database-number>]
 <
 Redis doesn't have a username, so use a dummy one in the URL if a password is
 required.
