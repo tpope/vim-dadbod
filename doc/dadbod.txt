@@ -114,6 +114,14 @@ Redis ~
 Redis doesn't have a username, so use a dummy one in the URL if a password is
 required.
 
+                                                *dadbod-sqlserver*
+SQL Server ~
+>
+    sqlserver://[<user>[:<password>]@][<host>][:<port>]/[<database>]
+    sqlserver://[<host>[:<port>]][;user=<user>][;...]
+<
+If the user and password are omitted, a trusted connection is used.
+
                                                 *dadbod-sqlite*
 SQLite ~
 >

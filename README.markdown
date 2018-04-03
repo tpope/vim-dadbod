@@ -13,6 +13,7 @@ take on [dbext.vim][], improving on it on the following ways:
   - Oracle
   - PostgreSQL
   - Redis
+  - SQL Server
   - SQLite
   - Your own easily implemented adapter
 * Easily configurable based on a project directory (as seen in [rails.vim][],
@@ -55,7 +56,7 @@ for later use.
 
 A few additional URL like formats are accepted for interop:
 
-* `:DB jdbc:postgresql://...`
+* `:DB jdbc:sqlserver://...`
 * `:DB dbext:profile=profile_name`
 * `:DB dbext:type=PGSQL:host=...`
 * `:DB $DATABASE_URL` (with optional [dotenv.vim][] support)
