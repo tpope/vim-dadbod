@@ -216,8 +216,8 @@ function! db#execute_command(bang, line1, line2, cmd) abort
         if !empty(maybe_infile)
           let lines = repeat([''], a:line1-1) +
                 \ readfile(expand(maybe_infile), a:line2)[(a:line1)-1 : -1]
-        elseif a:line1 == 1 && a:line2 == line('$')
-          let infile = expand('%')
+        elseif a:line1 == 1 && a:line2 == line('$') && empty(cmd) && !&modified && filereadable(expand('%'))
+          let infile = expand('%:p')
         else
           let lines = repeat([''], a:line1-1) + getline(a:line1, a:line2)
         endif
