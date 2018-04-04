@@ -237,11 +237,10 @@ function! db#execute_command(bang, line1, line2, cmd) abort
             \ '| let w:db = b:db'
             \ '| call s:init()'
       let s:results[conn] = outfile
-      let head = readfile(outfile, &cmdheight + 2)
       if a:bang
         silent execute 'botright split' outfile
       else
-        if db#adapter#call(conn, 'can_echo', [infile, outfile], cmd !~? '^select\>' && !getfsize(outfile))
+        if db#adapter#call(conn, 'can_echo', [infile, outfile], cmd !~? '^select\>\|^$' && !getfsize(outfile))
           if v:shell_error
             echohl ErrorMsg
           endif
