@@ -36,3 +36,10 @@ function! db#adapter#oracle#dbext(url) abort
   let url = db#url#parse(a:url)
   return {'srvname': s:conn(url), 'host': '', 'port': '', 'dbname': ''}
 endfunction
+
+function! db#adapter#oracle#massage(input) abort
+  if a:input =~# ";\s*\n*$"
+    return a:input
+  endif
+  return a:input . "\n;"
+endfunction
