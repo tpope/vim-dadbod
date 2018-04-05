@@ -199,7 +199,7 @@ function! db#execute_command(bang, line1, line2, cmd) abort
       let s:db = conn
       return 'try|execute '.string(cmd).'|finally|call db#unlet()|endtry'
     endif
-    if empty(cmd) && !a:line2 && a:line1
+    if empty(cmd) && a:line2 <= 0
       let cmd = db#adapter#dispatch(conn, 'interactive')
       if exists(':Start') == 2
         silent execute 'Start' escape(cmd, '%#')
@@ -212,7 +212,7 @@ function! db#execute_command(bang, line1, line2, cmd) abort
       let infile = file . '.' . db#adapter#call(conn, 'input_extension', [], 'sql')
       let outfile = file . '.' . db#adapter#call(conn, 'output_extension', [], 'dbout')
       let maybe_infile = matchstr(cmd, '^<\s*\zs.*\S')
-      if a:line2
+      if a:line2 > 0
         if !empty(maybe_infile)
           let lines = repeat([''], a:line1-1) +
                 \ readfile(expand(maybe_infile), a:line2)[(a:line1)-1 : -1]
