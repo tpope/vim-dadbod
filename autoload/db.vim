@@ -231,7 +231,7 @@ function! db#execute_command(bang, line1, line2, cmd) abort
         call writefile(lines, infile)
       endif
       call s:filter_write(conn, infile, outfile)
-      execute 'autocmd BufReadPost' tr(fnameescape(outfile), '\', '/')
+      execute 'autocmd BufReadPost' fnameescape(tr(outfile, '\', '/'))
             \ 'let b:db_input =' string(infile)
             \ '| let b:db =' string(conn)
             \ '| let w:db = b:db'
