@@ -213,7 +213,30 @@ function! db#execute_command(bang, line1, line2, cmd) abort
       let outfile = file . '.' . db#adapter#call(conn, 'output_extension', [], 'dbout')
       let maybe_infile = matchstr(cmd, '^<\s*\zs.*\S')
       if a:line2 > 0
-        if !empty(maybe_infile)
+        if a:line1 == 0
+          let saved = [&selection, &clipboard, @@]
+          try
+            set selection=inclusive clipboard-=unnamed clipboard-=unnamedplus
+            if a:line2 == 1
+              let setup = "`[v`]"
+            elseif a:line2 == 2
+              let setup = "`[\<C-V>`]"
+            elseif a:line2 == 3
+              let setup = "`<" . visualmode() . "`>"
+            else
+              return 'echoerr ' . string('DB: Invalid range')
+            endif
+            silent execute 'normal!' setup.'y'
+            let str = repeat("\n", line(setup[0:1])-1)
+            if setup[2] ==# 'v'
+              let str .= repeat(' ', col(setup[0:1]) - 1)
+            endif
+            let str .= substitute(@@, "\n$", '', '')
+          finally
+            let [&selection, &clipboard, @@] = saved
+          endtry
+          let lines = split(db#adapter#call(conn, 'massage', [str], str), "\n", 1)
+        elseif !empty(maybe_infile)
           let lines = repeat([''], a:line1-1) +
                 \ readfile(expand(maybe_infile), a:line2)[(a:line1)-1 : -1]
         elseif a:line1 == 1 && a:line2 == line('$') && empty(cmd) && !&modified && filereadable(expand('%'))
@@ -326,6 +349,27 @@ function! db#command_complete(A, L, P) abort
     return join(db#url_complete(a:A), "\n")
   endif
   return ""
+endfunction
+
+function! db#range(type) abort
+  return get({
+        \ 'line': "'[,']",
+        \ 'char': "0,1",
+        \ 'block': "0,2",
+        \ 'V': "'<,'>",
+        \ 'v': "0,3",
+        \ "\<C-V>": "0,3",
+        \ 0: "%",
+        \ 1: "."},
+        \ a:type, '.,.+' . (a:type-1)) . 'DB'
+endfunction
+
+function! db#op_exec(...) abort
+  if !a:0
+    set opfunc=db#op_exec
+    return 'g@'
+  endif
+  exe db#range(a:1)
 endfunction
 
 let s:dbext_vars = ['type', 'profile', 'bin', 'user', 'passwd', 'dbname', 'srvname', 'host', 'port', 'dsnname', 'extra', 'integratedlogin', 'buffer_defaulted']
