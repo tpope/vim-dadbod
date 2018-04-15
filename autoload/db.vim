@@ -178,7 +178,7 @@ function! db#execute_command(bang, line1, line2, cmd) abort
   endif
   let [url, cmd] = s:cmd_split(a:cmd)
   try
-    if cmd =~# '^='
+    if cmd =~# '^=' && a:line2 <= 0
       let target = substitute(cmd, '^=\s*', '', '')
       if empty(url)
         let url = 'w:db'
