@@ -23,14 +23,19 @@ function! db#adapter#postgresql#filter(url) abort
         \ '-P columns=' . &columns . ' -v ON_ERROR_STOP=1 -f -')
 endfunction
 
-function! s:parse_columns(output) abort
-  return map(split(a:output, "\n"), 'split(v:val, "|")')
+function! s:parse_columns(output, ...) abort
+  let rows = map(split(a:output, "\n"), 'split(v:val, "|")')
+  if a:0
+    return map(filter(rows, 'len(v:val) > a:1'), 'v:val[a:1]')
+  else
+    return rows
+  endif
 endfunction
 
 function! db#adapter#postgresql#complete_database(url) abort
   let cmd = 'psql --no-psqlrc -wltAX ' .
         \ shellescape(substitute(a:url, '/[^/]*$', '/postgres', ''))
-  return map(filter(s:parse_columns(system(cmd)), 'len(v:val) > 1'), 'v:val[0]')
+  return s:parse_columns(system(cmd), 0)
 endfunction
 
 function! db#adapter#postgresql#complete_opaque(_) abort
@@ -43,6 +48,6 @@ function! db#adapter#postgresql#can_echo(in, out) abort
 endfunction
 
 function! db#adapter#postgresql#tables(url) abort
-  return map(s:parse_columns(
-        \ system(db#adapter#postgresql#filter(a:url) . ' -tA -c "\dt"')), 'v:val[1]')
+  return s:parse_columns(system(
+        \ db#adapter#postgresql#filter(a:url) . ' --no-psqlrc -tA -c "\dtvm"'), 1)
 endfunction
