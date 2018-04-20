@@ -1,0 +1,3 @@
+* whitespace=space-before-tab,tab-in-indent,trailing-space
+.git* export-ignore
+*.markdown export-ignore
