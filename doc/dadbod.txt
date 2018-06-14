@@ -105,6 +105,11 @@ PostgreSQL ~
 <
 For interop, postgres:// URLs are also accepted.
 
+                                                *dadbod-presto*
+Presto ~
+>
+    presto://[<host>[:<port>]]/[<catalog>[/<schema>]]
+<
                                                 *dadbod-redis*
 Redis ~
 >

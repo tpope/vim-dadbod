@@ -12,6 +12,7 @@ take on [dbext.vim][], improving on it on the following ways:
   - MySQL
   - Oracle
   - PostgreSQL
+  - Presto
   - Redis
   - SQL Server
   - SQLite
