@@ -121,7 +121,11 @@ function! db#url#as_args(url, host, port, socket, user, password, db) abort
     let args .= ' ' . a:user . shellescape(url.user)
   endif
   if has_key(url, 'password') && !empty(a:password)
-    let args .= ' ' . a:password . shellescape(url.password)
+    if a:password =~# ' $'
+      let args .= ' ' . a:password . shellescape(url.password)
+    else
+      let args .= ' ' . shellescape(a:password . url.password)
+    endif
   endif
   if get(url, 'path', '') !~# '^/\=$'
     let db = substitute(url.path, '^/', '', '')
