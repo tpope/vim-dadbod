@@ -124,11 +124,13 @@ function! s:execute_sql(url, in, out, bang) abort
             \ 'conn': a:url,
             \ 'infile': a:in,
             \ 'outfile': a:out,
-            \ 'bang': a:bang
+            \ 'bang': a:bang,
+            \ 'buf': bufnr('%')
             \ })
-      let b:db_current_job_start = reltime()
       let b:db_current_job_elapsed = 0.0
-      let b:db_current_job_timer = timer_start(100, 'db#update_current_job_timer', {'repeat': -1})
+      let b:db_current_job_timer = timer_start(100,
+            \ function('s:update_current_job_timer', [reltime(), bufnr('%')]),
+            \ {'repeat': -1})
     end
   else
     if exists('*systemlist')
@@ -147,23 +149,23 @@ function! s:on_job_output(job_id, data, event) dict abort
 endfunction
 
 function! s:on_job_complete(job_id, _data, _event) dict abort
-  if !exists('b:db_current_job') || !b:db_current_job | return | endif
   call writefile(self.output, self.outfile, 'b')
   call s:handle_results(self.conn, self.infile, self.outfile, self.bang)
-  unlet b:db_current_job
-  if exists('b:db_current_job_start') | unlet b:db_current_job_start | endif
-endfunction
-
-function! db#update_current_job_timer(_timer)
-  if exists('b:db_current_job_start')
-    let b:db_current_job_elapsed = reltimefloat(reltime(b:db_current_job_start))
-  else
-    if exists('b:db_current_job_timer')
-      call timer_stop(b:db_current_job_timer)
-      unlet b:db_current_job_timer
+  if bufexists(self.buf)
+    if getbufvar(self.buf, 'db_current_job')
+      call setbufvar(self.buf, 'db_current_job', v:null)
+    endif
+    let timer = getbufvar(self.buf, 'db_current_job_timer')
+    if timer
+      call timer_stop(timer)
+      call setbufvar(self.buf, 'db_current_job_timer', v:null)
     endif
   endif
-  silent execute 'redrawstatus'
+endfunction
+
+function! s:update_current_job_timer(job_start, buf, _timer)
+  call setbufvar(a:buf, 'db_current_job_elapsed', reltimefloat(reltime(a:job_start)))
+  silent execute 'redrawstatus!'
 endfunction
 
 function! db#connect(url) abort
