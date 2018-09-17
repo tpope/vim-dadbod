@@ -144,13 +144,15 @@ function! s:execute_sql(url, in, out, bang) abort
 endfunction
 
 function! s:on_job_output(job_id, data, event) dict abort
-  let self.output[-1] .= a:data[0]
-  call extend(self.output, a:data[1:])
+  call writefile(a:data, self.outfile, 'ab')
+  if bufexists(self.outfile)
+    pedit +%
+  else
+    call s:handle_results(self.conn, self.infile, self.outfile, self.bang)
+  endif
 endfunction
 
 function! s:on_job_complete(job_id, _data, _event) dict abort
-  call writefile(self.output, self.outfile, 'b')
-  call s:handle_results(self.conn, self.infile, self.outfile, self.bang)
   if bufexists(self.buf)
     if getbufvar(self.buf, 'db_current_job')
       call setbufvar(self.buf, 'db_current_job', v:null)
