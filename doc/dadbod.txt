@@ -105,6 +105,17 @@ PostgreSQL ~
 <
 For interop, postgres:// URLs are also accepted.
 
+                                                *dadbod-osquery*
+osquery ~
+>
+    osquery:relative/path
+    osquery:/absolute/path
+    osquery:C:/windows/path
+    osquery:///relative/or/absolute/path
+<
+An empty path portion uses an in-memory database, which is how osquery is
+typically invoked.
+
                                                 *dadbod-presto*
 Presto ~
 >
