@@ -333,7 +333,7 @@ function! db#url_complete(A) abort
 endfunction
 
 function! db#command_complete(A, L, P) abort
-  let arg = substitute(strpart(a:L, 0, a:P), '^DB\=!\=\s*', '', '')
+  let arg = substitute(strpart(a:L, 0, a:P), '^.\{-\}DB\=!\=\s*', '', '')
   if arg =~# '^\%(\w:\|\$\)\h\w*\s*=\s*\S*$'
     return join(db#url_complete(a:A), "\n")
   endif
