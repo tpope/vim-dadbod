@@ -112,11 +112,11 @@ endfunction
 function! s:execute_sql(url, in, out, bang) abort
   let cmd = s:filter(a:url) . ' ' .
         \ db#adapter#call(a:url, 'input_flag', [], '< ') . shellescape(a:in)
-  if exists('*jobstart')
+  if exists('*async#job#start')
     if exists('b:db_current_job') && b:db_current_job
       throw 'DB: a query is already in progress'
     else
-      let b:db_current_job = jobstart(cmd, {
+      let b:db_current_job = async#job#start(cmd, {
             \ 'on_stdout': function('s:on_job_output'),
             \ 'on_stderr': function('s:on_job_output'),
             \ 'on_exit': function('s:on_job_complete'),
