@@ -109,15 +109,65 @@ function! s:filter(url) abort
   return db#adapter#dispatch(a:url, op)
 endfunction
 
-function! s:filter_write(url, in, out) abort
+function! s:execute_sql(url, in, out, bang) abort
   let cmd = s:filter(a:url) . ' ' .
         \ db#adapter#call(a:url, 'input_flag', [], '< ') . shellescape(a:in)
-  if exists('*systemlist')
-    let lines = systemlist(cmd)
+  if exists('*jobstart')
+    if exists('b:db_current_job') && b:db_current_job
+      throw 'DB: a query is already in progress'
+    else
+      let b:db_current_job = jobstart(cmd, {
+            \ 'on_stdout': function('s:on_job_output'),
+            \ 'on_stderr': function('s:on_job_output'),
+            \ 'on_exit': function('s:on_job_complete'),
+            \ 'output': [''],
+            \ 'conn': a:url,
+            \ 'infile': a:in,
+            \ 'outfile': a:out,
+            \ 'bang': a:bang,
+            \ 'buf': bufnr('%')
+            \ })
+      let b:db_current_job_elapsed = 0.0
+      let b:db_current_job_timer = timer_start(100,
+            \ function('s:update_current_job_timer', [reltime(), bufnr('%')]),
+            \ {'repeat': -1})
+    end
   else
-    let lines = split(system(cmd), "\n", 1)
+    if exists('*systemlist')
+      let lines = systemlist(cmd)
+    else
+      let lines = split(system(cmd), "\n", 1)
+    endif
+    call writefile(lines, a:out, 'b')
+    call s:handle_results(a:url, a:in, a:out, a:bang)
+  end
+endfunction
+
+function! s:on_job_output(job_id, data, event) dict abort
+  call writefile(a:data, self.outfile, 'ab')
+  if bufexists(self.outfile)
+    pedit +%
+  else
+    call s:handle_results(self.conn, self.infile, self.outfile, self.bang)
   endif
-  call writefile(lines, a:out, 'b')
+endfunction
+
+function! s:on_job_complete(job_id, _data, _event) dict abort
+  if bufexists(self.buf)
+    if getbufvar(self.buf, 'db_current_job')
+      call setbufvar(self.buf, 'db_current_job', v:null)
+    endif
+    let timer = getbufvar(self.buf, 'db_current_job_timer')
+    if timer
+      call timer_stop(timer)
+      call setbufvar(self.buf, 'db_current_job_timer', v:null)
+    endif
+  endif
+endfunction
+
+function! s:update_current_job_timer(job_start, buf, _timer)
+  call setbufvar(a:buf, 'db_current_job_elapsed', reltimefloat(reltime(a:job_start)))
+  silent execute 'redrawstatus!'
 endfunction
 
 function! db#connect(url) abort
@@ -144,7 +194,7 @@ function! db#connect(url) abort
 endfunction
 
 function! s:reload() abort
-  call s:filter_write(b:db, b:db_input, expand('%:p'))
+  call s:execute_sql(b:db, b:db_input, expand('%:p'), v:false)
   edit!
 endfunction
 
@@ -253,26 +303,7 @@ function! db#execute_command(bang, line1, line2, cmd) abort
       if exists('lines')
         call writefile(lines, infile)
       endif
-      call s:filter_write(conn, infile, outfile)
-      execute 'autocmd BufReadPost' fnameescape(tr(outfile, '\', '/'))
-            \ 'let b:db_input =' string(infile)
-            \ '| let b:db =' string(conn)
-            \ '| let w:db = b:db'
-            \ '| call s:init()'
-      let s:results[conn] = outfile
-      if a:bang
-        silent execute 'botright split' outfile
-      else
-        if db#adapter#call(conn, 'can_echo', [infile, outfile], 0)
-          if v:shell_error
-            echohl ErrorMsg
-          endif
-          echo substitute(join(readfile(outfile), "\n"), "\n*$", '', '')
-          echohl NONE
-          return ''
-        endif
-        silent execute 'botright pedit' outfile
-      endif
+      call s:execute_sql(conn, infile, outfile, a:bang)
     endif
   catch /^DB exec error: /
     redraw
@@ -284,6 +315,28 @@ function! db#execute_command(bang, line1, line2, cmd) abort
     return 'echoerr '.string(v:exception)
   endtry
   return ''
+endfunction
+
+function! s:handle_results(conn, infile, outfile, bang) abort
+  execute 'autocmd BufReadPost' fnameescape(tr(a:outfile, '\', '/'))
+        \ 'let b:db_input =' string(a:infile)
+        \ '| let b:db =' string(a:conn)
+        \ '| let w:db = b:db'
+        \ '| call s:init()'
+  let s:results[a:conn] = a:outfile
+  if a:bang
+    silent execute 'botright split' a:outfile
+  else
+    if db#adapter#call(a:conn, 'can_echo', [a:infile, a:outfile], 0)
+      if v:shell_error
+        echohl ErrorMsg
+      endif
+      echo substitute(join(readfile(a:outfile), "\n"), "\n*$", '', '')
+      echohl NONE
+      return ''
+    endif
+    silent execute 'botright pedit' a:outfile
+  endif
 endfunction
 
 function! s:glob(pattern, prelength) abort
