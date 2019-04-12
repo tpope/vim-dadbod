@@ -172,6 +172,7 @@ function! db#unlet() abort
 endfunction
 
 function! db#execute_command(mods, bang, line1, line2, cmd) abort
+  let mods = a:mods ==# '<mods>' ? '' : a:mods
   if type(a:cmd) == type(0)
     " Error generating arguments
     return ''
@@ -261,7 +262,7 @@ function! db#execute_command(mods, bang, line1, line2, cmd) abort
             \ '| call s:init()'
       let s:results[conn] = outfile
       if a:bang
-        silent execute a:mods 'botright split' outfile
+        silent execute mods 'botright split' outfile
       else
         if db#adapter#call(conn, 'can_echo', [infile, outfile], 0)
           if v:shell_error
@@ -271,7 +272,7 @@ function! db#execute_command(mods, bang, line1, line2, cmd) abort
           echohl NONE
           return ''
         endif
-        silent execute a:mods 'botright pedit' outfile
+        silent execute mods 'botright pedit' outfile
       endif
     endif
   catch /^DB exec error: /
