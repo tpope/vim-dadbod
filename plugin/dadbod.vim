@@ -27,7 +27,7 @@ call extend(g:dbext_schemes, {
       \ }, 'keep')
 
 command! -bang -nargs=? -range=-1 -complete=custom,db#command_complete DB
-      \ exe db#execute_command(<bang>0, <line1>, <count>, substitute(<q-args>,
+      \ exe db#execute_command('<mods>', <bang>0, <line1>, <count>, substitute(<q-args>,
       \ '^[al]:\w\+\>\ze\s*\%($\|[^[:space:]=]\)', '\=eval(submatch(0))', ''))
 
 function! s:manage_dbext() abort
