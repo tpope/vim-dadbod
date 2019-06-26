@@ -88,6 +88,7 @@ MySQL ~
 >
     mysql://[<user>[:<password>]@][<host>[:<port>]]/[database]
     mysql://[<user>[:<password>]@][<%2Fsocket%2Fpath>]/[<database>]
+    mysql:///[<database>]?login-path=<login-path>
     mysql:[<database>]
 <
                                                 *dadbod-oracle*

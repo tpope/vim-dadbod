@@ -17,8 +17,11 @@ function! db#adapter#mysql#canonicalize(url) abort
         \ 'protocol': ''})
 endfunction
 
-function! s:command_for_url(url)
-  return 'mysql' . db#url#as_args(a:url, '-h ', '-P ', '-S ', '-u ', '-p', '')
+function! s:command_for_url(url) abort
+  let params = db#url#parse(a:url).params
+  return 'mysql' .
+        \ (has_key(params, 'login-path') ? ' --login-path=' . shellescape(params['login-path'])  : '') .
+        \ db#url#as_args(a:url, '-h ', '-P ', '-S ', '-u ', '-p', '')
 endfunction
 
 function! db#adapter#mysql#interactive(url) abort
