@@ -97,15 +97,6 @@ Oracle ~
     oracle://[<user>[:<password>]@][<host>][:<port>]/[<database>]
     oracle:<user>/<password>@[//]<host>[:<port>]/<database>
 <
-                                                *dadbod-postgresql*
-PostgreSQL ~
->
-    postgresql://[<user>[:<password>]@][<host>[:<port>]]/[<database>]
-    postgresql://[<user>[:<password>]@][<%2Fsocket%2Fpath>]/[<database>]
-    postgresql:[<database>]
-<
-For interop, postgres:// URLs are also accepted.
-
                                                 *dadbod-osquery*
 osquery ~
 >
@@ -116,6 +107,15 @@ osquery ~
 <
 An empty path portion uses an in-memory database, which is how osquery is
 typically invoked.
+
+                                                *dadbod-postgresql*
+PostgreSQL ~
+>
+    postgresql://[<user>[:<password>]@][<host>[:<port>]]/[<database>]
+    postgresql://[<user>[:<password>]@][<%2Fsocket%2Fpath>]/[<database>]
+    postgresql:[<database>]
+<
+For interop, postgres:// URLs are also accepted.
 
                                                 *dadbod-presto*
 Presto ~
