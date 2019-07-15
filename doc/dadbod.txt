@@ -77,6 +77,11 @@ dbext ~
 <
 For supported adapters, dbext modelines and profiles can be used directly.
 
+                                                *dadbod-impala*
+Impala ~
+>
+    impala://[<host>[:<port>]]/[<database>]
+
                                                 *dadbod-mongodb*
 MongoDB ~
 >

@@ -8,6 +8,7 @@ take on [dbext.vim][], improving on it on the following ways:
 * All interaction is through invoking `:DB`, not 53 different commands and 35
   different maps (omitting many of the more esoteric features, of course)
 * Supports a modern array of backends, including NoSQL databases:
+  - Impala
   - MongoDB
   - MySQL
   - Oracle
