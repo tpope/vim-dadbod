@@ -46,3 +46,17 @@ function! db#adapter#sqlserver#dbext(url) abort
         \ 'integratedlogin': !has_key(url, 'user'),
         \ }
 endfunction
+
+function! s:complete(url, query) abort
+  let cmd = db#adapter#sqlserver#interactive(a:url)
+  let out = system(cmd . ' -h-1 -W -Q "SET NOCOUNT ON; ' . a:query . '"')
+  return v:shell_error ? [] : map(split(out, "\n"), 'matchstr(v:val, "\\S\\+")')
+endfunction
+
+function! db#adapter#sqlserver#complete_database(url) abort
+  return s:complete(matchstr(a:url, '^[^:]\+://.\{-\}/'), 'SELECT NAME FROM sys.sysdatabases')
+endfunction
+
+function! db#adapter#sqlserver#tables(url) abort
+  return s:complete(a:url, 'SELECT TABLE_NAME FROM information_schema.tables ORDER BY TABLE_NAME')
+endfunction
