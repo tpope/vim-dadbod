@@ -49,7 +49,8 @@ endfunction
 
 function! s:complete(url, query) abort
   let cmd = db#adapter#sqlserver#interactive(a:url)
-  let out = system(cmd . ' -h-1 -W -Q "SET NOCOUNT ON; ' . a:query . '"')
+  let query = 'SET NOCOUNT ON; ' . a:query
+  let out = system(cmd . ' -h-1 -W -Q ' . shellescape(query))
   return v:shell_error ? [] : map(split(out, "\n"), 'matchstr(v:val, "\\S\\+")')
 endfunction
 
