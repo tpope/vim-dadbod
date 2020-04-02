@@ -67,10 +67,14 @@ A few additional URL like formats are accepted for interop:
 Plugins can provide their own URL handlers as well.  For example,
 [heroku.vim][] provides support for `heroku:appname` style URLs.
 
+If you want to manage multiple connections at once through UI,
+try [dadbod-ui][].
+
 [dbext.vim]: http://www.vim.org/script.php?script_id=356
 [dotenv.vim]: https://tpope.io/vim/dotenv.git
 [heroku.vim]: https://tpope.io/vim/heroku.git
 [rails.vim]:  https://tpope.io/vim/rails.git
+[dadbod-ui]:  https://github.com/kristijanhusak/vim-dadbod-ui
 
 ## Installation
 
