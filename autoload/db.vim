@@ -232,6 +232,9 @@ function! db#execute_command(mods, bang, line1, line2, cmd) abort
             if setup[2] ==# 'v'
               let str .= repeat(' ', col(setup[0:1]) - 1)
             endif
+            if len(cmd)
+              let str .= cmd . ' '
+            endif
             let str .= substitute(@@, "\n$", '', '')
           finally
             let [&selection, &clipboard, @@] = saved
@@ -243,7 +246,11 @@ function! db#execute_command(mods, bang, line1, line2, cmd) abort
         elseif a:line1 == 1 && a:line2 == line('$') && empty(cmd) && !&modified && filereadable(expand('%'))
           let infile = expand('%:p')
         else
-          let lines = repeat([''], a:line1-1) + getline(a:line1, a:line2)
+          let lines = getline(a:line1, a:line2)
+          if len(cmd)
+            let lines[0] = cmd . ' ' . lines[0]
+          endif
+          let lines = extend(repeat([''], a:line1-1), lines)
         endif
       elseif !a:line1 || !empty(maybe_infile)
         let infile = expand(empty(maybe_infile) ? '%' : maybe_infile)
