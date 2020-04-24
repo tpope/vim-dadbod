@@ -16,6 +16,7 @@ take on [dbext.vim][], improving on it on the following ways:
   - PostgreSQL
   - Presto
   - Redis
+  - Snowflake
   - SQL Server
   - SQLite
   - Your own easily implemented adapter
