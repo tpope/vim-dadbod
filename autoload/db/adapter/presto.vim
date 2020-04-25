@@ -20,6 +20,9 @@ function! s:params(url) abort
   if has_key(params, 'port')
     let presto_params.server .= ':'.params.port 
   endif
+  if has_key(params, 'user')
+    let presto_params.user = params.user
+  endif
   if has_key(params, 'path')
     let path = split(params.path, '/')
     if len(path) >= 1
