@@ -136,7 +136,7 @@ Redis ~
 Redis doesn't have a username, so use a dummy one in the URL if a password is
 required.
 
-                                              dadbod-snowflake
+                                                *dadbod-snowflake*
 Snowflake
 >
     snowflake://[<accountname>.snowflakecomputing.com]/?[username=<username>&dbname=<dbname>&warehouse=<warehouse>]
