@@ -20,7 +20,7 @@ function! s:params(url) abort
   let parsed_params = db#url#parse(a:url)
   let conn_params = parsed_params.params
   if has_key(parsed_params, 'host')
-    let accountname = split(parsed_params.host, '.')[0]
+    let accountname = split(parsed_params.host, '\.')[0]
     let conn_params.accountname = accountname 
   endif
   return conn_params
