@@ -29,6 +29,8 @@ function! db#adapter#sqlserver#interactive(url) abort
   let url = db#url#parse(a:url)
   return 'sqlcmd' .
         \ ' -S ' . shellescape(s:server(url)) .
+        \ (has_key(url.params, 'Encrypt') ? ' -N' : '') .
+        \ (has_key(url.params, 'TrustServerCertificate') ? ' -C' : '') .
         \ (has_key(url, 'user') ? '' : ' -E') .
         \ db#url#as_args(url, '', '', '', '-U ', '-P ', '-d ')
 endfunction
