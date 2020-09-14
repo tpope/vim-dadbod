@@ -27,7 +27,7 @@ function! db#url#parse(url) abort
   endfor
   let url = substitute(a:url, '?.*', '', '')
   let scheme = '^\([[:alnum:].+-]\+\)'
-  let match = matchlist(url, scheme . '://\%(\([^@/:]*\):\=\([^@/]*\)@\)\=\(\[[[:xdigit:]:]\+\]\|[^:/;,]*\)\%(:\(\d\+\)\)\=\($\|/.*\)')
+  let match = matchlist(url, scheme . '://\%(\([^@/:]*\):\=\([^/]*\)@\)\=\(\[[[:xdigit:]:]\+\]\|[^:/;,]*\)\%(:\(\d\+\)\)\=\($\|/.*\)')
   if !empty(match)
     return filter({
           \ 'scheme': match[1],
