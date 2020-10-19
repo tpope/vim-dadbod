@@ -81,6 +81,16 @@ For supported adapters, dbext modelines and profiles can be used directly.
 Impala ~
 >
     impala://[<host>[:<port>]]/[<database>]
+<
+                                                *dadbod-jq*
+jq ~
+>
+    jq:relative/path
+    jq:/absolute/path
+    jq:C:/windows/path
+    jq:///relative/or/absolute/path
+<
+An empty path runs jq without input, see --null-input parameter.
 
                                                 *dadbod-mongodb*
 MongoDB ~

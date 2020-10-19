@@ -9,6 +9,7 @@ take on [dbext.vim][], improving on it on the following ways:
   different maps (omitting many of the more esoteric features, of course)
 * Supports a modern array of backends, including NoSQL databases:
   - Impala
+  - jq
   - MongoDB
   - MySQL
   - Oracle

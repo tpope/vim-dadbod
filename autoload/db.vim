@@ -201,6 +201,9 @@ function! db#execute_command(mods, bang, line1, line2, cmd) abort
       return 'try|execute '.string(cmd).'|finally|call db#unlet()|endtry'
     endif
     if empty(cmd) && a:line2 <= 0
+      if !db#adapter#supports(conn, 'interactive')
+        return 'echoerr "DB: interactive mode not supported for ' . db#url#parse(conn).scheme . '"'
+      end
       let cmd = db#adapter#dispatch(conn, 'interactive')
       if exists(':Start') == 2
         silent execute 'Start' escape(cmd, '%#')
