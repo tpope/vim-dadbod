@@ -77,6 +77,19 @@ dbext ~
 <
 For supported adapters, dbext modelines and profiles can be used directly.
 
+                                                *dadbod-clickhouse*
+ClickHouse ~
+>
+    clickhouse://[<host>[:port]]/[<database>][?setting=value[&another_setting=value]]
+    clickhouse:[database][?setting=value[&another_setting=value]]
+<
+It has two special parameters:
+
+* secure: if set to "1", "true" or "True", TLS is used
+* format: any valid ClickHouse format
+
+Example: clickhouse:///database?format=PrettyNoEscape&secure=1
+
                                                 *dadbod-impala*
 Impala ~
 >
