@@ -39,10 +39,6 @@ function! db#adapter#clickhouse#interactive(url, ...) abort
         \ db#url#as_args(a:url, '--host ', '--port ', '', '--user ', '--port ', '--database ')
 endfunction
 
-function! db#adapter#clickhouse#filter(url) abort
-  return db#adapter#clickhouse#interactive(a:url)
-endfunction
-
 function! db#adapter#clickhouse#complete_opaque(_) abort
   return db#adapter#clickhouse#complete_database('clickhouse:///')
 endfunction
@@ -52,7 +48,7 @@ function! db#adapter#clickhouse#auth_input() abort
 endfunction
 
 function! db#adapter#clickhouse#auth_pattern() abort
-  return '^Code: 516. DB::Exception'
+  return '^Code: 516\. DB::Exception'
 endfunction
 
 function! db#adapter#clickhouse#can_echo(in, out) abort
