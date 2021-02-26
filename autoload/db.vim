@@ -104,18 +104,45 @@ function! db#resolve(url)
   return s:canonicalize(s:resolve(a:url))
 endfunction
 
+function! s:shellesc(arg) abort
+  if a:arg =~# '^[A-Za-z0-9_/:.-]\+$'
+    return a:arg
+  else
+    return shellescape(a:arg)
+  endif
+endfunction
+
+function! s:shell(cmd) abort
+  if type(a:cmd) ==# type([])
+    return join(map(copy(a:cmd), 's:shellesc(v:val)'), ' ')
+  else
+    return a:cmd
+  endif
+endfunction
+
 function! s:filter(url) abort
   let op = db#adapter#supports(a:url, 'filter') ? 'filter' : 'interactive'
-  return db#adapter#dispatch(a:url, op)
+  return s:shell(db#adapter#dispatch(a:url, op))
+endfunction
+
+function! db#systemlist(cmd, ...) abort
+  if exists('*systemlist')
+    return call('systemlist', [s:shell(a:cmd)] + a:000)
+  else
+    let lines = split(call('system', [s:shell(a:cmd)] + a:000), "\n", 1)
+    if len(lines) && empty(lines[-1])
+      call remove(lines, -1)
+    endif
+    return lines
+  endif
 endfunction
 
 function! s:filter_write(url, in, out) abort
   let cmd = s:filter(a:url) . ' ' .
         \ db#adapter#call(a:url, 'input_flag', [], '< ') . shellescape(a:in)
-  if exists('*systemlist')
-    let lines = systemlist(cmd)
-  else
-    let lines = split(system(cmd), "\n", 1)
+  let lines = db#systemlist(cmd)
+  if len(lines)
+    call add(lines, '')
   endif
   call writefile(lines, a:out, 'b')
 endfunction
@@ -204,7 +231,7 @@ function! db#execute_command(mods, bang, line1, line2, cmd) abort
       if !db#adapter#supports(conn, 'interactive')
         return 'echoerr "DB: interactive mode not supported for ' . db#url#parse(conn).scheme . '"'
       end
-      let cmd = db#adapter#dispatch(conn, 'interactive')
+      let cmd = s:shell(db#adapter#dispatch(conn, 'interactive'))
       if exists(':Start') == 2
         silent execute 'Start' escape(cmd, '%#')
       else
