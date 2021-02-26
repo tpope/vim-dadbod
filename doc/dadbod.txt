@@ -88,7 +88,21 @@ It has two special parameters:
 * secure: if set to "1", "true" or "True", TLS is used
 * format: any valid ClickHouse format
 
-Example: clickhouse:///database?format=PrettyNoEscape&secure=1
+Example:
+>
+    clickhouse:///database?format=PrettyNoEscape&secure=1
+<
+
+NOTE: if `clickhouse-client` binary exists, then it will be used together with
+TCP protocol, otherwise the plugin uses `curl` and HTTP protocol. There is a way to
+force one or another by setting `g:db_clickhouse_client` variable.
+
+                                                *g:db_clickhouse_client*
+>
+    let g:db_clickhouse_client = 'native'
+    " or
+    let g:db_clickhouse_client = 'curl'
+<
 
                                                 *dadbod-impala*
 Impala ~
