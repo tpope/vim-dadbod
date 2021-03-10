@@ -24,5 +24,5 @@ function! db#adapter#jq#filter(url) abort
 endfunction
 
 function! db#adapter#jq#tables(url) abort
-  return split(system('jq --raw-output "[.. | objects | keys[]] | unique[]" ' . shellescape(db#url#file_path(a:url))), "\n")
+  return db#systemlist('jq --raw-output "[.. | objects | keys[]] | unique[]" ' . shellescape(db#url#file_path(a:url)))
 endfunction

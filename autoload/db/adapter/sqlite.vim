@@ -37,7 +37,7 @@ function! db#adapter#sqlite#interactive(url) abort
 endfunction
 
 function! db#adapter#sqlite#tables(url) abort
-  return split(system(db#adapter#sqlite#command(a:url) . ' -noheader -cmd .tables'), "\n")
+  return split(join(db#systemlist(db#adapter#sqlite#command(a:url) . ' -noheader -cmd .tables')))
 endfunction
 
 function! db#adapter#sqlite#massage(input) abort

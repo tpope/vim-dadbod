@@ -58,9 +58,9 @@ endfunction
 
 function db#adapter#clickhouse#complete_database(url) abort
   let cmd = db#adapter#clickhouse#filter(substitute(a:url, '/[^/]*$', '/system', ''))
-  return split(system(cmd, 'SHOW DATABASES FORMAT TSV'), '\n')
+  return db#systemlist(cmd, 'SHOW DATABASES FORMAT TSV')
 endfunction
 
 function! db#adapter#clickhouse#tables(url) abort
-  return split(system(db#adapter#clickhouse#filter(a:url), 'SHOW TABLES FORMAT TSV'))
+  return db#systemlist(db#adapter#clickhouse#filter(a:url), 'SHOW TABLES FORMAT TSV')
 endfunction

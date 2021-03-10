@@ -127,20 +127,20 @@ endfunction
 
 function! db#systemlist(cmd, ...) abort
   if exists('*systemlist')
-    return call('systemlist', [s:shell(a:cmd)] + a:000)
+    let lines = call('systemlist', [s:shell(a:cmd)] + a:000)
   else
     let lines = split(call('system', [s:shell(a:cmd)] + a:000), "\n", 1)
     if len(lines) && empty(lines[-1])
       call remove(lines, -1)
     endif
-    return lines
   endif
+  return v:shell_error && a:000 < 2 ? [] : lines
 endfunction
 
 function! s:filter_write(url, in, out) abort
   let cmd = s:filter(a:url) . ' ' .
         \ db#adapter#call(a:url, 'input_flag', [], '< ') . shellescape(a:in)
-  let lines = db#systemlist(cmd)
+  let lines = db#systemlist(cmd, '', 1)
   if len(lines)
     call add(lines, '')
   endif

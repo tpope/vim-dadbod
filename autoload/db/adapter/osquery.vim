@@ -25,7 +25,7 @@ function! db#adapter#osquery#interactive(url) abort
 endfunction
 
 function! db#adapter#osquery#tables(url) abort
-  return split(system(db#adapter#osquery#command(a:url) . ' -noheader -cmd .tables'), "\n")
+  return split(join(db#systemlist(db#adapter#osquery#command(a:url) . ' -noheader -cmd .tables')))
 endfunction
 
 function! db#adapter#osquery#massage(input) abort

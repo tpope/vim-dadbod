@@ -68,8 +68,8 @@ function! db#adapter#presto#complete_opaque(url) abort
   if prefix != ''
     let lookup .= " LIKE '".prefix."%'"
   endif
-  let out = system(s:command_for_url(params) . ' --execute "SHOW '.lookup.'"')
-  let completions = map(split(out, '\n'), 'base . "/" . substitute(v:val, "\"", "", "g")')
+  let out = db#systemlist(s:command_for_url(params) . ' --execute "SHOW '.lookup.'"')
+  let completions = map(out, 'base . "/" . substitute(v:val, "\"", "", "g")')
   return completions
 endfunction
 

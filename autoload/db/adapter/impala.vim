@@ -46,8 +46,8 @@ function! db#adapter#impala#complete_opaque(url) abort
   if (has_database)
     let q = 'show tables in '.params.database
   endif
-  let out = system(s:command_for_url(params) . ' --query "'.query.'"')
-  let completions = map(split(out, '\n'), 'base . "/" . substitute(v:val, "\"", "", "g")')
+  let out = db#systemlist(s:command_for_url(params) . ' --query "'.query.'"')
+  let completions = map(out, 'base . "/" . substitute(v:val, "\"", "", "g")')
   return completions
 endfunction
 

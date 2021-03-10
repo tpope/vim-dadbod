@@ -27,26 +27,15 @@ function! db#adapter#mongodb#filter(url) abort
   return db#adapter#mongodb#interactive(a:url) . ' --quiet'
 endfunction
 
-function! db#adapter#mongodb#system(url, cmd) abort
-  let output = system(db#adapter#mongodb#filter(a:url), a:cmd)
-  if !v:shell_error
-    return output
-  endif
-  throw 'DB: '.output
-endfunction
-
 function! db#adapter#mongodb#complete_opaque(url) abort
   return db#adapter#mongodb#complete_database('mongodb:///')
 endfunction
 
 function! db#adapter#mongodb#complete_database(url) abort
   let pre = matchstr(a:url, '^[^:]\+://.\{-\}/')
-  let cmd = db#adapter#mongodb#interactive(pre)
-  let out = system(cmd . ' --quiet', 'show databases')
-  if v:shell_error
-    return []
-  endif
-  return map(split(out, "\n"), 'matchstr(v:val, "\\S\\+")')
+  let cmd = db#adapter#mongodb#filter(pre)
+  let out = db#systemlist(cmd, 'show databases')
+  return map(out, 'matchstr(v:val, "\\S\\+")')
 endfunction
 
 function! db#adapter#mongodb#can_echo(in, out) abort
@@ -55,9 +44,6 @@ function! db#adapter#mongodb#can_echo(in, out) abort
 endfunction
 
 function! db#adapter#mongodb#tables(url) abort
-  let out = db#adapter#mongodb#system(a:url, 'show collections')
-  if v:shell_error
-    return []
-  endif
-  return map(split(out, "\n"), '"db.".matchstr(v:val, "\\S\\+")')
+  let out = db#systemlist(db#adapter#mongodb#filter(a:url), 'show collections')
+  return map(out, '"db.".matchstr(v:val, "\\S\\+")')
 endfunction
