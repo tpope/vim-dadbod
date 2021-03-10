@@ -19,13 +19,15 @@ endfunction
 
 function! db#adapter#oracle#interactive(url) abort
   let url = db#url#parse(a:url)
-  return get(g:, 'dbext_default_ORA_bin', 'sqlplus') . ' -L ' . shellescape(
+  return [get(g:, 'dbext_default_ORA_bin', 'sqlplus'), '-L',
         \ get(url, 'user', 'system') . '/' . get(url, 'password', 'oracle') .
-        \ '@' . s:conn(url))
+        \ '@' . s:conn(url)]
 endfunction
 
 function! db#adapter#oracle#filter(url) abort
-  return substitute(db#adapter#oracle#interactive(a:url), ' -L ', ' -L -S ', '')
+  let cmd = db#adapter#oracle#interactive(url)
+  call insert(cmd, '-S', 1)
+  return cmd
 endfunction
 
 function! db#adapter#oracle#auth_pattern() abort

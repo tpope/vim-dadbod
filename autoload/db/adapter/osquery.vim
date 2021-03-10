@@ -11,21 +11,17 @@ function! db#adapter#osquery#dbext(url) abort
   return {'dbname': s:path(a:url)}
 endfunction
 
-function! db#adapter#osquery#command(url) abort
+function! db#adapter#osquery#interactive(url) abort
   let path = db#url#file_path(a:url)
-  let cmd = 'osqueryi'
+  let cmd = ['osqueryi']
   if strlen(path) > 1
-    let cmd = cmd . ' --db_path ' . shellescape(path)
+    let cmd += ['--db_path', path]
   endif
   return cmd
 endfunction
 
-function! db#adapter#osquery#interactive(url) abort
-  return db#adapter#osquery#command(a:url)
-endfunction
-
 function! db#adapter#osquery#tables(url) abort
-  return split(join(db#systemlist(db#adapter#osquery#command(a:url) . ' -noheader -cmd .tables')))
+  return split(join(db#systemlist(db#adapter#osquery#interactive(a:url) + ['-noheader', '-cmd', '.tables'])))
 endfunction
 
 function! db#adapter#osquery#massage(input) abort

@@ -4,9 +4,9 @@ endif
 let g:autoloaded_db_presto = 1
 
 function! s:command_for_url(params) abort
-  let cmd = 'presto'
+  let cmd = ['presto']
   for [k, v] in items(a:params)
-    let cmd .= ' --'.k.' '.v
+    call extend(cmd, '--' . k, v)
   endfor
   return cmd
 endfunction
@@ -18,7 +18,7 @@ function! s:params(url) abort
     let presto_params.server = params.host
   endif
   if has_key(params, 'port')
-    let presto_params.server .= ':'.params.port 
+    let presto_params.server .= ':'.params.port
   endif
   if has_key(params, 'user')
     let presto_params.user = params.user
@@ -68,7 +68,7 @@ function! db#adapter#presto#complete_opaque(url) abort
   if prefix != ''
     let lookup .= " LIKE '".prefix."%'"
   endif
-  let out = db#systemlist(s:command_for_url(params) . ' --execute "SHOW '.lookup.'"')
+  let out = db#systemlist(s:command_for_url(params) + ['--execute', 'SHOW '.lookup])
   let completions = map(out, 'base . "/" . substitute(v:val, "\"", "", "g")')
   return completions
 endfunction

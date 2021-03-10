@@ -4,9 +4,9 @@ endif
 let g:autoloaded_db_impala = 1
 
 function! s:command_for_url(params) abort
-  let cmd = 'impala-shell'
+  let cmd = ['impala-shell']
   for [k, v] in items(a:params)
-    let cmd .= ' --'.k.' '.v
+    call extend(cmd, ['--' . k, v])
   endfor
   return cmd
 endfunction
@@ -46,7 +46,7 @@ function! db#adapter#impala#complete_opaque(url) abort
   if (has_database)
     let q = 'show tables in '.params.database
   endif
-  let out = db#systemlist(s:command_for_url(params) . ' --query "'.query.'"')
+  let out = db#systemlist(s:command_for_url(params) + ['--query', query])
   let completions = map(out, 'base . "/" . substitute(v:val, "\"", "", "g")')
   return completions
 endfunction

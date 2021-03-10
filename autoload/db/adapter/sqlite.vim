@@ -29,15 +29,15 @@ function! db#adapter#sqlite#dbext(url) abort
 endfunction
 
 function! db#adapter#sqlite#command(url) abort
-  return 'sqlite3 ' . shellescape(s:path(a:url))
+  return ['sqlite3', s:path(a:url)]
 endfunction
 
 function! db#adapter#sqlite#interactive(url) abort
-  return db#adapter#sqlite#command(a:url) . ' -column -header'
+  return db#adapter#sqlite#command(a:url) + ['-column', '-header']
 endfunction
 
 function! db#adapter#sqlite#tables(url) abort
-  return split(join(db#systemlist(db#adapter#sqlite#command(a:url) . ' -noheader -cmd .tables')))
+  return split(join(db#systemlist(db#adapter#sqlite#command(a:url) + ['-noheader', '-cmd', '.tables'])))
 endfunction
 
 function! db#adapter#sqlite#massage(input) abort

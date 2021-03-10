@@ -27,12 +27,11 @@ endfunction
 
 function! db#adapter#sqlserver#interactive(url) abort
   let url = db#url#parse(a:url)
-  return 'sqlcmd' .
-        \ ' -S ' . shellescape(s:server(url)) .
-        \ (has_key(url.params, 'Encrypt') ? ' -N' : '') .
-        \ (has_key(url.params, 'TrustServerCertificate') ? ' -C' : '') .
-        \ (has_key(url, 'user') ? '' : ' -E') .
-        \ db#url#as_args(url, '', '', '', '-U ', '-P ', '-d ')
+  return ['sqlcmd', '-S', s:server(url)] +
+        \ (has_key(url.params, 'Encrypt') ? ['-N'] : []) +
+        \ (has_key(url.params, 'TrustServerCertificate') ? ['-C'] : []) +
+        \ (has_key(url, 'user') ? [] : ['-E']) +
+        \ db#url#as_argv(url, '', '', '', '-U ', '-P ', '-d ')
 endfunction
 
 function! db#adapter#sqlserver#input_flag() abort
@@ -52,7 +51,7 @@ endfunction
 function! s:complete(url, query) abort
   let cmd = db#adapter#sqlserver#interactive(a:url)
   let query = 'SET NOCOUNT ON; ' . a:query
-  let out = db#systemlist(cmd . ' -h-1 -W -Q ' . shellescape(query))
+  let out = db#systemlist(cmd + ['-h-1', '-W', '-Q', query])
   return map(out, 'matchstr(v:val, "\\S\\+")')
 endfunction
 

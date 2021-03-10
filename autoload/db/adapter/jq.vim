@@ -16,13 +16,15 @@ function! db#adapter#jq#output_extension() abort
 endfunction
 
 function! db#adapter#jq#filter(url) abort
+  let cmd = ['jq', '--from-file', '/dev/stdin']
   let input = db#url#file_path(a:url)
   if input =~# '^[\/]\=$'
-    let input = '--null-input'
+    return cmd + ['--null-input']
+  else
+    return cmd + ['--', input]
   endif
-  return 'jq --from-file /dev/stdin ' . shellescape(input)
 endfunction
 
 function! db#adapter#jq#tables(url) abort
-  return db#systemlist('jq --raw-output "[.. | objects | keys[]] | unique[]" ' . shellescape(db#url#file_path(a:url)))
+  return db#systemlist(['jq', '--raw-output', '[.. | objects | keys[]] | unique[]', '--', db#url#file_path(a:url)])
 endfunction

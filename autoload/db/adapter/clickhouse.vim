@@ -27,16 +27,16 @@ endfunction
 
 function! db#adapter#clickhouse#interactive(url, ...) abort
   let url = s:process_url(a:url)
-  let cmd = 'clickhouse-client'
+  let cmd = ['clickhouse-client']
   if has_key(url.params, 'secure')
-    let cmd .= ' --secure'
+    call add(cmd, '--secure')
     unlet url.params.secure
   endif
   for [k, v] in items(url.params)
-    let cmd .= ' --' . k . ' ' . shellescape(v)
+    call extend(cmd, ['--' . k, v])
   endfor
-  return cmd .
-        \ db#url#as_args(a:url, '--host ', '--port ', '', '--user ', '--port ', '--database ')
+  return cmd +
+        \ db#url#as_argv(a:url, '--host ', '--port ', '', '--user ', '--port ', '--database ')
 endfunction
 
 function! db#adapter#clickhouse#complete_opaque(_) abort

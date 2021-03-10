@@ -18,13 +18,13 @@ endfunction
 function! db#adapter#mongodb#interactive(url) abort
   let url = db#url#parse(a:url)
   let params = db#url#parse(a:url).params
-  return 'mongo ' . (get(params, 'ssl') =~# '^[1tT]' ? ' --ssl' : '') .
-        \ (has_key(params, 'authSource') ? ' --authenticationDatabase ' . params['authSource'] : '') .
-        \ db#url#as_args(url, '--host ', '--port ', '', '-u ', '-p ', '')
+  return ['mongo'] + (get(params, 'ssl') =~# '^[1tT]' ? ['--ssl'] : []) +
+        \ (has_key(params, 'authSource') ? ['--authenticationDatabase ' . params['authSource']] : []) +
+        \ db#url#as_argv(url, '--host ', '--port ', '', '-u ', '-p ', '')
 endfunction
 
 function! db#adapter#mongodb#filter(url) abort
-  return db#adapter#mongodb#interactive(a:url) . ' --quiet'
+  return db#adapter#mongodb#interactive(a:url) + ['--quiet']
 endfunction
 
 function! db#adapter#mongodb#complete_opaque(url) abort
