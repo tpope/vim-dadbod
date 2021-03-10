@@ -14,7 +14,7 @@ endfunction
 function! db#adapter#osquery#command(url) abort
   let path = db#url#file_path(a:url)
   let cmd = 'osqueryi'
-  if strlen(path) > 0
+  if strlen(path) > 1
     let cmd = cmd . ' --db_path ' . shellescape(path)
   endif
   return cmd
