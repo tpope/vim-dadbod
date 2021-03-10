@@ -106,26 +106,27 @@ function! db#url#fragment(url) abort
   return matchstr(a:url, '#\zs.*')
 endfunction
 
-function! db#url#as_args(url, host, port, socket, user, password, db) abort
+function! db#url#as_argv(url, host, port, socket, user, password, db) abort
   let url = db#url#parse(a:url)
-  let args = ''
+  let args = []
   if get(url, 'host') =~# '/' && !empty(a:socket)
-    let args .= ' ' . a:socket . shellescape(url.host)
+    let args += split(a:socket, ' ', 1)
+    let args[-1] .= url.host
   elseif has_key(url, 'host') && !empty(a:host)
-    let args .= ' ' . a:host . shellescape(url.host)
+    let args += split(a:host, ' ', 1)
+    let args[-1] .= url.host
   endif
   if has_key(url, 'port') && !empty(a:port)
-    let args .= ' ' . a:port . shellescape(url.port)
+    let args += split(a:port, ' ', 1)
+    let args[-1] .= url.port
   endif
   if !empty(get(url, 'user')) && !empty(a:user)
-    let args .= ' ' . a:user . shellescape(url.user)
+    let args += split(a:user, ' ', 1)
+    let args[-1] .= url.user
   endif
   if has_key(url, 'password') && !empty(a:password)
-    if a:password =~# ' $'
-      let args .= ' ' . a:password . shellescape(url.password)
-    else
-      let args .= ' ' . shellescape(a:password . url.password)
-    endif
+    let args += split(a:password, ' ', 1)
+    let args[-1] .= url.password
   endif
   if get(url, 'path', '') !~# '^/\=$'
     let db = substitute(url.path, '^/', '', '')
@@ -133,9 +134,14 @@ function! db#url#as_args(url, host, port, socket, user, password, db) abort
     let db = db#url#decode(substitute(url.opaque, '?.*', '', ''))
   endif
   if exists('db')
-    let args .= ' ' . a:db . shellescape(db)
+    let args += empty(a:db) ? [''] : split(a:db, ' ', 1)
+    let args[-1] .= db
   endif
   return args
+endfunction
+
+function! db#url#as_args(url, host, port, socket, user, password, db) abort
+  return join(map(db#url#as_argv(a:url, a:host, a:port, a:socket, a:user, a:password, a:db), '" " . db#shellescape(v:val)'), '')
 endfunction
 
 function! db#url#path_encode(str, ...) abort

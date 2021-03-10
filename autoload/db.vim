@@ -104,7 +104,7 @@ function! db#resolve(url)
   return s:canonicalize(s:resolve(a:url))
 endfunction
 
-function! s:shellesc(arg) abort
+function! db#shellescape(arg) abort
   if a:arg =~# '^[A-Za-z0-9_/:.-]\+$'
     return a:arg
   else
@@ -114,7 +114,7 @@ endfunction
 
 function! s:shell(cmd) abort
   if type(a:cmd) ==# type([])
-    return join(map(copy(a:cmd), 's:shellesc(v:val)'), ' ')
+    return join(map(copy(a:cmd), 'db#shellescape(v:val)'), ' ')
   else
     return a:cmd
   endif

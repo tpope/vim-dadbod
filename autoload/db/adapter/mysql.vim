@@ -18,10 +18,10 @@ endfunction
 
 function! s:command_for_url(url) abort
   let params = db#url#parse(a:url).params
-  return 'mysql' .
-        \ (has_key(params, 'login-path') ? ' --login-path=' . shellescape(params['login-path'])  : '') .
-        \ (has_key(params, 'protocol') ? ' --protocol=' . shellescape(params['protocol'])  : '') .
-        \ db#url#as_args(a:url, '-h ', '-P ', '-S ', '-u ', '-p', '')
+  return ['mysql'] +
+        \ (has_key(params, 'login-path') ? ['--login-path=' . shellescape(params['login-path'])]  : []) +
+        \ (has_key(params, 'protocol') ? ['--protocol=' . shellescape(params['protocol'])] : []) +
+        \ db#url#as_argv(a:url, '-h ', '-P ', '-S ', '-u ', '-p', '')
 endfunction
 
 function! db#adapter#mysql#interactive(url) abort
@@ -29,7 +29,7 @@ function! db#adapter#mysql#interactive(url) abort
 endfunction
 
 function! db#adapter#mysql#filter(url) abort
-  return s:command_for_url(a:url) . ' -t'
+  return s:command_for_url(a:url) + ['-t']
 endfunction
 
 function! db#adapter#mysql#auth_pattern() abort
@@ -43,10 +43,10 @@ endfunction
 function! db#adapter#mysql#complete_database(url) abort
   let pre = matchstr(a:url, '[^:]\+://.\{-\}/')
   let cmd = s:command_for_url(pre)
-  let out = system(cmd, 'show databases')
-  return split(out, "\n")[1:-1]
+  let out = db#systemlist(cmd + ['-e', 'show databases'])
+  return out[1:-1]
 endfunction
 
 function! db#adapter#mysql#tables(url) abort
-  return split(system(s:command_for_url(a:url). ' -e "show tables"'), "\n")
+  return db#systemlist(s:command_for_url(a:url) + ['-e', 'show tables'])[1:-1]
 endfunction
