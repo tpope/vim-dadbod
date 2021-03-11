@@ -127,9 +127,9 @@ endfunction
 
 function! db#systemlist(cmd, ...) abort
   if exists('*systemlist')
-    let lines = call('systemlist', [s:shell(a:cmd)] + a:000)
+    let lines = call('systemlist', [s:shell(a:cmd)] + a:000[0:0])
   else
-    let lines = split(call('system', [s:shell(a:cmd)] + a:000), "\n", 1)
+    let lines = split(call('system', [s:shell(a:cmd)] + a:000[0:0]), "\n", 1)
     if len(lines) && empty(lines[-1])
       call remove(lines, -1)
     endif
