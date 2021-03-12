@@ -57,10 +57,10 @@ function! db#adapter#clickhouse#can_echo(in, out) abort
 endfunction
 
 function db#adapter#clickhouse#complete_database(url) abort
-  let cmd = db#adapter#clickhouse#filter(substitute(a:url, '/[^/]*$', '/system', ''))
+  let cmd = db#adapter#clickhouse#interactive(substitute(a:url, '/[^/]*$', '/system', ''))
   return db#systemlist(cmd, 'SHOW DATABASES FORMAT TSV')
 endfunction
 
 function! db#adapter#clickhouse#tables(url) abort
-  return db#systemlist(db#adapter#clickhouse#filter(a:url), 'SHOW TABLES FORMAT TSV')
+  return db#systemlist(db#adapter#clickhouse#interactive(a:url), 'SHOW TABLES FORMAT TSV')
 endfunction
