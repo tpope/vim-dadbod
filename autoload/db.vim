@@ -120,27 +120,43 @@ function! s:shell(cmd) abort
   endif
 endfunction
 
-function! s:filter(url) abort
-  let op = db#adapter#supports(a:url, 'filter') ? 'filter' : 'interactive'
-  return s:shell(db#adapter#dispatch(a:url, op))
+let s:temp_content = {}
+function! s:temp_content(str) abort
+  let key = '=' . a:str
+  if !has_key(s:temp_content, key)
+    let f = tempname()
+    call writefile(split(a:str, "\n", 1), f, 'b')
+    let s:temp_content[key] = f
+  endif
+  return s:temp_content[key]
 endfunction
 
-function! db#systemlist(cmd, ...) abort
+function! s:filter(url, in) abort
+  let op = db#adapter#supports(a:url, 'filter') ? 'filter' : 'interactive'
+  return s:shell(db#adapter#dispatch(a:url, op)) . ' ' .
+        \ db#adapter#call(a:url, 'input_flag', [], '< ') . shellescape(a:in)
+endfunction
+
+function! s:systemlist(cmd, ...) abort
   if exists('*systemlist')
-    let lines = call('systemlist', [s:shell(a:cmd)] + a:000[0:0])
+    return call('systemlist', [s:shell(a:cmd)] + a:000)
   else
-    let lines = split(call('system', [s:shell(a:cmd)] + a:000[0:0]), "\n", 1)
+    let lines = split(call('system', [s:shell(a:cmd)] + a:000), "\n", 1)
     if len(lines) && empty(lines[-1])
       call remove(lines, -1)
     endif
+    return lines
   endif
-  return v:shell_error && a:0 < 2 ? [] : lines
+endfunction
+
+function! db#systemlist(cmd, ...) abort
+  let lines = call('s:systemlist', [a:cmd] + a:000)
+  return v:shell_error ? [] : lines
 endfunction
 
 function! s:filter_write(url, in, out) abort
-  let cmd = s:filter(a:url) . ' ' .
-        \ db#adapter#call(a:url, 'input_flag', [], '< ') . shellescape(a:in)
-  let lines = db#systemlist(cmd, '', 1)
+  let cmd = s:filter(a:url, a:in)
+  let lines = s:systemlist(cmd)
   if len(lines)
     call add(lines, '')
   endif
@@ -153,13 +169,13 @@ function! db#connect(url) abort
   if has_key(s:passwords, resolved)
     let url = substitute(resolved, '://[^:/@]*\zs@', ':'.db#url#encode(s:passwords[url]).'@', '')
   endif
-  let input = db#adapter#call(url, 'auth_input', [], "\n")
+  let input = s:temp_content(db#adapter#call(url, 'auth_input', [], "\n"))
   let pattern = db#adapter#call(url, 'auth_pattern', [], 'auth\|login')
-  let out = substitute(system(s:filter(url), input), "\n$", '', '')
+  let out = join(s:systemlist(s:filter(url, input)), "\n")
   if v:shell_error && out =~? pattern && resolved =~# '^[^:]*://[^:/@]*@'
     let password = inputsecret('Password: ')
     let url = substitute(resolved, '://[^:/@]*\zs@', ':'.db#url#encode(password).'@', '')
-    let out = substitute(system(s:filter(url), input), "\n$", '', '')
+    let out = join(s:systemlist(s:filter(url, input)), "\n")
     if !v:shell_error
       let s:passwords[resolved] = password
     endif
