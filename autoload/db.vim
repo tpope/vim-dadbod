@@ -134,7 +134,7 @@ function! db#systemlist(cmd, ...) abort
       call remove(lines, -1)
     endif
   endif
-  return v:shell_error && a:000 < 2 ? [] : lines
+  return v:shell_error && a:0 < 2 ? [] : lines
 endfunction
 
 function! s:filter_write(url, in, out) abort
