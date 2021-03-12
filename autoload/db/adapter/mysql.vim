@@ -21,6 +21,9 @@ function! s:command_for_url(url) abort
   return ['mysql'] +
         \ (has_key(params, 'login-path') ? ['--login-path=' . params['login-path']]  : []) +
         \ (has_key(params, 'protocol') ? ['--protocol=' . params['protocol']] : []) +
+        \ (has_key(params, 'ssl-ca') ? ['--ssl-ca=' . params['ssl-ca']]  : []) +
+        \ (has_key(params, 'ssl-cert') ? ['--ssl-cert=' . params['ssl-cert']]  : []) +
+        \ (has_key(params, 'ssl-key') ? ['--ssl-key=' . params['ssl-key']]  : []) +
         \ db#url#as_argv(a:url, '-h ', '-P ', '-S ', '-u ', '-p', '')
 endfunction
 
