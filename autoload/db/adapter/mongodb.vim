@@ -17,9 +17,9 @@ endfunction
 
 function! db#adapter#mongodb#interactive(url) abort
   let url = db#url#parse(a:url)
-  let params = db#url#parse(a:url).params
+  let params = url.params
   return ['mongo'] + (get(params, 'ssl') =~# '^[1tT]' ? ['--ssl'] : []) +
-        \ (has_key(params, 'authSource') ? ['--authenticationDatabase ' . params['authSource']] : []) +
+        \ (has_key(params, 'authSource') ? ['--authenticationDatabase', params['authSource']] : []) +
         \ db#url#as_argv(url, '--host ', '--port ', '', '-u ', '-p ', '')
 endfunction
 
