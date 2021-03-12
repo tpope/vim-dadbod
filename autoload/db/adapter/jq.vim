@@ -15,16 +15,19 @@ function! db#adapter#jq#output_extension() abort
   return 'json'
 endfunction
 
-function! db#adapter#jq#filter(url) abort
-  let cmd = ['jq', '--from-file', '/dev/stdin']
+function! s:path_args(url) abort
   let input = db#url#file_path(a:url)
   if input =~# '^[\/]\=$'
-    return cmd + ['--null-input']
+    return ['--null-input']
   else
-    return cmd + ['--', input]
+    return ['--', input]
   endif
 endfunction
 
+function! db#adapter#jq#input(url, in) abort
+  return ['jq', '--from-file', a:in] + s:path_args(a:url)
+endfunction
+
 function! db#adapter#jq#tables(url) abort
-  return db#systemlist(['jq', '--raw-output', '[.. | objects | keys[]] | unique[]', '--', db#url#file_path(a:url)])
+  return db#systemlist(['jq', '--raw-output', '[.. | objects | keys[]] | unique[]'] + s:path_args(a:url))
 endfunction

@@ -33,8 +33,8 @@ function! db#adapter#impala#interactive(url) abort
   return s:command_for_url(s:params(a:url))
 endfunction
 
-function! db#adapter#impala#input_flag() abort
-  return '--query_file='
+function! db#adapter#impala#input(url, in) abort
+  return db#adapter#impala#interactive(a:url) + ['--query_file=' . a:in]
 endfunction
 
 function! db#adapter#impala#complete_opaque(url) abort

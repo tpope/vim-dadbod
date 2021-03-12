@@ -132,6 +132,9 @@ function! s:temp_content(str) abort
 endfunction
 
 function! s:filter(url, in) abort
+  if db#adapter#supports(a:url, 'input')
+    return db#adapter#dispatch(a:url, 'input', a:in)
+  endif
   let op = db#adapter#supports(a:url, 'filter') ? 'filter' : 'interactive'
   return s:shell(db#adapter#dispatch(a:url, op)) . ' ' .
         \ db#adapter#call(a:url, 'input_flag', [], '< ') . shellescape(a:in)

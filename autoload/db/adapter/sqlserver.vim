@@ -34,8 +34,8 @@ function! db#adapter#sqlserver#interactive(url) abort
         \ db#url#as_argv(url, '', '', '', '-U ', '-P ', '-d ')
 endfunction
 
-function! db#adapter#sqlserver#input_flag() abort
-  return '-i '
+function! db#adapter#sqlserver#input(url, in) abort
+  return db#adapter#sqlserver#interactive(a:url) + ['-i', a:in]
 endfunction
 
 function! db#adapter#sqlserver#dbext(url) abort

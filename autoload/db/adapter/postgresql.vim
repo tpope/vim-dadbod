@@ -23,6 +23,10 @@ function! db#adapter#postgresql#filter(url) abort
         \ ['-P', 'columns=' . &columns, '-v', 'ON_ERROR_STOP=1'])
 endfunction
 
+function! db#adapter#postgresql#input(url, in) abort
+  return db#adapter#postgresql#filter(a:url) + ['-f', a:in]
+endfunction
+
 function! s:parse_columns(output, ...) abort
   let rows = map(copy(a:output), 'split(v:val, "|")')
   if a:0

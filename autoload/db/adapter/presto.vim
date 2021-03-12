@@ -39,8 +39,8 @@ function! db#adapter#presto#interactive(url) abort
   return s:command_for_url(s:params(a:url))
 endfunction
 
-function! db#adapter#presto#input_flag() abort
-  return '--output-format ALIGNED --file '
+function! db#adapter#presto#input(url, in) abort
+  return db#adapter#presto#interactive(a:url) + ['--output-format', 'ALIGNED', '--file', a:in]
 endfunction
 
 function! db#adapter#presto#complete_opaque(url) abort
