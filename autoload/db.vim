@@ -379,8 +379,12 @@ function! db#command_complete(A, L, P) abort
   if cmd =~# '^<'
     return join(s:glob(a:A, 0), "\n")
   elseif a:A !=# arg
-    let conn = db#connect(url)
-    return join(db#adapter#call(conn, 'tables', [conn], []), "\n")
+    try
+      let conn = db#connect(url)
+      return join(db#adapter#call(conn, 'tables', [conn], []), "\n")
+    catch
+      return ''
+    endtry
   elseif a:A =~# '^[[:alpha:]]:[\/]\|^[.\/~$]'
     return join(s:glob(a:A, 0), "\n")
   elseif a:A =~# '^[[:alnum:].+-]\+\%(:\|$\)' || empty(a:A)
