@@ -209,6 +209,7 @@ function! s:init() abort
   setlocal nowrap nolist readonly nomodifiable nobuflisted bufhidden=delete
   let &l:statusline = substitute(&statusline, '%\([^[:alpha:]{!]\+\)[fFt]', '%\1{db#url#safe_format(b:db)}', '')
   nnoremap <buffer><silent> q :bd<CR>
+  nnoremap <buffer><silent> gq :bdelete<CR>
   nnoremap <buffer><nowait> r :DB <C-R>=get(readfile(b:db_input, 1), 0)<CR>
   nnoremap <buffer><silent> R :call <SID>reload()<CR>
 endfunction
