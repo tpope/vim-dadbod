@@ -25,7 +25,7 @@ function! db#adapter#oracle#interactive(url) abort
 endfunction
 
 function! db#adapter#oracle#filter(url) abort
-  let cmd = db#adapter#oracle#interactive(url)
+  let cmd = db#adapter#oracle#interactive(a:url)
   call insert(cmd, '-S', 1)
   return cmd
 endfunction
