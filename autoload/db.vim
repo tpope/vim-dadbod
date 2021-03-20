@@ -161,8 +161,7 @@ function! s:filter(url, in, ...) abort
     return db#adapter#dispatch(a:url, 'input', a:in)
   endif
   let op = db#adapter#supports(a:url, 'filter') ? 'filter' : 'interactive'
-  return s:shell(db#adapter#dispatch(a:url, op)) . ' ' .
-        \ db#adapter#call(a:url, 'input_flag', [], '< ') . shellescape(a:in)
+  return db#adapter#dispatch(a:url, op) + [db#adapter#call(a:url, 'input_flag', [], '< '), shellescape(a:in)]
 endfunction
 
 function! s:check_job_running(bang) abort
