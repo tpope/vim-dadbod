@@ -165,30 +165,92 @@ function! s:filter(url, in, ...) abort
         \ db#adapter#call(a:url, 'input_flag', [], '< ') . shellescape(a:in)
 endfunction
 
-function! s:systemlist(cmd, ...) abort
-  if exists('*systemlist')
-    return call('systemlist', [s:shell(a:cmd)] + a:000)
-  else
-    let lines = split(call('system', [s:shell(a:cmd)] + a:000), "\n", 1)
-    if len(lines) && empty(lines[-1])
-      call remove(lines, -1)
-    endif
-    return lines
+function! s:check_job_running(bang) abort
+  if !a:bang && get(t:, 'db_job_running', 0)
+    throw 'DB: Query already running for this tab'
   endif
+endfunction
+
+function! s:systemlist_job_cb(data, output, status) abort
+  call extend(a:data.content, a:output)
+  let a:data.status = a:status
 endfunction
 
 function! db#systemlist(cmd, ...) abort
-  let lines = call('s:systemlist', [a:cmd] + a:000)
-  return v:shell_error ? [] : lines
+  let return_err_status = len(a:000) ==# 1 && type(a:1) ==# type(0)
+  let cmd = type(a:cmd) ==# type([]) ? a:cmd : [a:cmd]
+  if !return_err_status
+    let cmd += a:000
+  endif
+
+  let job_result = { 'content': [], 'status': 0 }
+
+  let job = db#job#run(cmd, function('s:systemlist_job_cb', [job_result]))
+  call db#job#wait(job)
+
+  if return_err_status
+    return [job_result.content, job_result.status]
+  endif
+  return job_result.content
 endfunction
 
-function! s:filter_write(url, in, out, prefer_filter) abort
+function! s:filter_write(url, in, out, mods, bang, prefer_filter) abort
   let cmd = s:filter(a:url, a:in, a:prefer_filter)
-  let lines = s:systemlist(cmd)
-  if len(lines)
-    call add(lines, '')
+  call s:check_job_running(a:bang)
+  if !a:bang
+    let t:db_job_running = 1
   endif
-  call writefile(lines, a:out, 'b')
+  echo 'DB: Running query...'
+  call setbufvar(bufnr(a:out), '&modified', 1)
+  let job_id = db#job#run(cmd, function('s:query_callback', [a:out, a:in, a:url, a:mods, a:bang]))
+  call setbufvar(bufnr(a:out), 'db_job_id', job_id)
+  return job_id
+endfunction
+
+function! s:query_callback(out, in, conn, mods, bang, lines, status)
+  if !a:bang
+    unlet! t:db_job_running
+  endif
+  let winnr = bufwinnr(bufnr(a:out))
+  let status_msg = a:status ? 'DB: Canceled' : 'DB: Done'
+  call writefile(a:lines, a:out, 'b')
+  call setbufvar(bufnr(a:out), '&modified', 0)
+  call setbufvar(bufnr(a:out), 'db_job_id', '')
+
+  if winnr ==? -1
+    if db#adapter#call(a:conn, 'can_echo', [a:in, a:out], 0)
+      if a:status
+        echohl ErrorMsg
+      endif
+      echo substitute(join(readfile(a:out), "\n"), "\n*$", '', '')
+      echohl NONE
+      return ''
+    endif
+
+    call s:open_preview(a:out, a:mods, a:bang)
+    echo status_msg
+    return
+  endif
+
+  let old_winnr = winnr()
+
+  if winnr !=? old_winnr
+    silent! exe winnr.'wincmd w'
+  endif
+  edit!
+  if winnr !=? old_winnr
+    silent! exe old_winnr.'wincmd w'
+  endif
+
+  echo status_msg
+endfunction
+
+function! s:open_preview(outfile, mods, bang)
+  if a:bang
+    silent execute a:mods 'split' a:outfile
+  else
+    silent execute a:mods 'pedit' a:outfile
+  endif
 endfunction
 
 function! db#connect(url) abort
@@ -199,29 +261,25 @@ function! db#connect(url) abort
   endif
   let input = s:temp_content(db#adapter#call(url, 'auth_input', [], "\n"))
   let pattern = db#adapter#call(url, 'auth_pattern', [], 'auth\|login')
-  let out = join(s:systemlist(s:filter(url, input)), "\n")
-  if v:shell_error && out =~? pattern && resolved =~# '^[^:]*://[^:/@]*@'
+  let [out, err] = db#systemlist(s:filter(url, input), 1)
+  let out = join(out, "\n")
+  if err && out =~? pattern && resolved =~# '^[^:]*://[^:/@]*@'
     let password = inputsecret('Password: ')
     let url = substitute(resolved, '://[^:/@]*\zs@', ':'.db#url#encode(password).'@', '')
-    let out = join(s:systemlist(s:filter(url, input)), "\n")
-    if !v:shell_error
+    let [out, err] = db#systemlist(s:filter(url, input), 1)
+    let out = join(out, "\n")
+    if !err
       let s:passwords[resolved] = password
     endif
   endif
-  if !v:shell_error
+  if !err
     return url
   endif
   throw 'DB exec error: '.out
 endfunction
 
 function! s:reload() abort
-  if has_key(b:db, 'finish_reltime')
-    call remove(b:db, 'finish_reltime')
-  endif
-  let b:db.start_reltime = reltime()
-  call s:filter_write(b:db, b:db_input, expand('%:p'), b:db.prefer_filter)
-  let b:db.finish_reltime = reltime()
-  edit!
+  call s:filter_write(b:db, b:db_input, expand('%:p'), b:db_mods, b:db_bang, get(b:, 'db_prefer_filter', 1)
 endfunction
 
 let s:url_pattern = '\%([abgltvw]:\w\+\|\a[[:alnum:].+-]\+:\S*\|\$[[:alpha:]_]\S*\|[.~]\=/\S*\|[.~]\|\%(type\|profile\)=\S\+\)\S\@!'
@@ -244,7 +302,7 @@ function! s:init() abort
   let b:db = query
   let b:dadbod = query
   let w:db = b:db.db_url
-  setlocal nowrap nolist readonly nomodifiable nobuflisted bufhidden=delete
+  setlocal nowrap nolist readonly nomodifiable nobuflisted
   let &l:statusline = substitute(&statusline, '%\([^[:alpha:]{!]\+\)[fFt]', '%\1{db#url#safe_format(b:db.db_url)}', '')
   if empty(mapcheck('q', 'n'))
     nnoremap <buffer><silent> q :echoerr "DB: q map has been replaced by gq"<CR>
@@ -254,6 +312,7 @@ function! s:init() abort
   endif
   nnoremap <buffer><nowait> r :DB <C-R>=get(readfile(b:db_input, 1), 0)<CR>
   nnoremap <buffer><silent> R :call <SID>reload()<CR>
+  nnoremap <buffer><silent> <C-c> :call db#job#cancel(get(b:, 'db_job_id', ''))<CR>
 endfunction
 
 function! db#unlet() abort
@@ -261,6 +320,10 @@ function! db#unlet() abort
 endfunction
 
 function! db#execute_command(mods, bang, line1, line2, cmd) abort
+  if !has('nvim') && !exists('*job_start')
+    echoerr 'DB: Vim version with +job feature is required.'
+    return
+  end
   if type(a:cmd) == type(0)
     " Error generating arguments
     return ''
@@ -307,6 +370,7 @@ function! db#execute_command(mods, bang, line1, line2, cmd) abort
         redraw!
       endif
     else
+      call s:check_job_running(a:bang)
       let file = tempname()
       let infile = file . '.' . db#adapter#call(conn, 'input_extension', [], 'sql')
       let outfile = file . '.' . db#adapter#call(conn, 'output_extension', [], 'dbout')
@@ -366,28 +430,17 @@ function! db#execute_command(mods, bang, line1, line2, cmd) abort
             \ 'bang': a:bang,
             \ 'mods': mods,
             \ 'prefer_filter': exists('lines'),
+            \ 'start_reltime': reltime(),
             \ }
       let s:inputs[infile] = query
+      call writefile([], outfile, 'b')
       execute 'autocmd BufReadPost' fnameescape(tr(outfile, '\', '/'))
             \ 'let b:db_input =' string(infile)
             \ '| call s:init()'
-      let query.start_reltime = reltime()
-      call s:filter_write(conn, infile, outfile, exists('lines'))
-      let query.finish_reltime = reltime()
-      let query.reltime = reltime(query.start_reltime, query.finish_reltime)
-      if a:bang
-        silent execute mods 'split' outfile
-      else
-        if db#adapter#call(conn, 'can_echo', [infile, outfile], 0)
-          if v:shell_error
-            echohl ErrorMsg
-          endif
-          echo substitute(join(readfile(outfile), "\n"), "\n*$", '', '')
-          echohl NONE
-          return ''
-        endif
-        silent execute mods 'pedit' outfile
-      endif
+      execute 'autocmd BufUnload' fnameescape(tr(outfile, '\', '/'))
+            \ 'call db#job#cancel(getbufvar(str2nr(expand("<abuf>")), "db_job_id", ""))'
+      call s:open_preview(outfile, mods, a:bang)
+      call s:filter_write(conn, infile, outfile, mods, a:bang, exists('lines'))
     endif
   catch /^DB exec error: /
     redraw
