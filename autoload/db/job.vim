@@ -55,7 +55,11 @@ function! db#job#run(cmd, callback) abort
       let opts['noblock'] = 1
     endif
 
-    return job_start(a:cmd, opts)
+    if type(a:cmd) ==# type([])
+      return job_start(a:cmd, opts)
+    endif
+
+    return job_start([&shell, &shellcmdflag, a:cmd], opts)
   endif
 
   throw 'DB: jobs not supported by this vim version.'

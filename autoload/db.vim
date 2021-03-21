@@ -161,7 +161,8 @@ function! s:filter(url, in, ...) abort
     return db#adapter#dispatch(a:url, 'input', a:in)
   endif
   let op = db#adapter#supports(a:url, 'filter') ? 'filter' : 'interactive'
-  return db#adapter#dispatch(a:url, op) + [db#adapter#call(a:url, 'input_flag', [], '< '), shellescape(a:in)]
+  return s:shell(db#adapter#dispatch(a:url, op)) . ' ' .
+        \ db#adapter#call(a:url, 'input_flag', [], '< ') . shellescape(a:in)
 endfunction
 
 function! s:check_job_running(bang) abort
@@ -177,8 +178,8 @@ endfunction
 
 function! db#systemlist(cmd, ...) abort
   let return_err_status = len(a:000) ==# 1 && type(a:1) ==# type(0)
-  let cmd = type(a:cmd) ==# type([]) ? a:cmd : [a:cmd]
-  if !return_err_status
+  let cmd = a:cmd
+  if !return_err_status && type(a:cmd) ==# type([])
     let cmd += a:000
   endif
 
