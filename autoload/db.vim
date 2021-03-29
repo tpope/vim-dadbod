@@ -14,6 +14,15 @@ function! s:expand(expr) abort
   return exists('*DotenvExpand') ? DotenvExpand(a:expr) : expand(a:expr)
 endfunction
 
+" Hide pointless `No matching autocommands` in Vim
+if !has('nvim')
+  augroup db_dummy_autocmd
+    autocmd!
+    autocmd User DBQueryStart "
+    autocmd User DBQueryFinished "
+  augroup END
+endif
+
 let s:flags = '\%(:[p8~.htre]\|:g\=s\(.\).\{-\}\1.\{-\}\1\)*'
 let s:expandable = '\\*\%(<\w\+>\|:\@<=\~\|%[[:alnum:]]\@!\|\$\(\w\+\)\)' . s:flags
 function! s:expand_all(str) abort
@@ -196,6 +205,7 @@ function! s:filter_write(url, in, out, mods, bang, prefer_filter) abort
   if !a:bang
     let t:db_job_running = 1
   endif
+  doautocmd User DBQueryStart
   echo 'DB: Running query...'
   call setbufvar(bufnr(a:out), '&modified', 1)
   let job_id = db#job#run(cmd, function('s:query_callback', [a:out, a:in, a:url, a:mods, a:bang]), stdin_file)
@@ -212,6 +222,7 @@ function! s:query_callback(out, in, conn, mods, bang, lines, status)
   call writefile(a:lines, a:out, 'b')
   call setbufvar(bufnr(a:out), '&modified', 0)
   call setbufvar(bufnr(a:out), 'db_job_id', '')
+  doautocmd User DBQueryFinished
 
   if winnr ==? -1
     if db#adapter#call(a:conn, 'can_echo', [a:in, a:out], 0)
