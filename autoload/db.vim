@@ -35,12 +35,27 @@ function! s:resolve(url) abort
   else
     let url = a:url
   endif
-  if type(url) == type('') && url =~# '^[gtwb]:\w'
-    if has_key(eval(matchstr(url, '^\w:')), matchstr(url, ':\zs.*'))
-      let url = eval(url)
+  let c = 5
+  while c > 0
+    let c -= 1
+    if type(url) == type({}) && len(get(url, 'db_url', ''))
+      let l:.url = url.db_url
+    elseif type(url) == type({}) && len(get(url, 'url', ''))
+      let l:.url = url.url
+    elseif type(url) == type({}) && len(get(url, 'scheme', ''))
+      let l:.url = db#url#format(url)
+    elseif type(url) == type('') && url =~# '^[gtwb]:\w'
+      if has_key(eval(matchstr(url, '^\w:')), matchstr(url, ':\zs.*'))
+        let url = eval(url)
+      else
+        throw 'DB: no such variable ' . url
+      endif
     else
-      throw 'DB: no such variable ' . url
+      break
     endif
+  endwhile
+  if type(url) !=# type('')
+    throw 'DB: URL is not a string'
   endif
   if url =~# '^type=\|^profile='
     let url = 'dbext:'.url
