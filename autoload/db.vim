@@ -131,8 +131,9 @@ function! s:temp_content(str) abort
   return s:temp_content[key]
 endfunction
 
-function! s:filter(url, in) abort
-  if db#adapter#supports(a:url, 'input')
+function! s:filter(url, in, ...) abort
+  let prefer_filter = a:0 && a:1
+  if db#adapter#supports(a:url, 'input') && !(prefer_filter && db#adapter#supports(a:url, 'filter'))
     return db#adapter#dispatch(a:url, 'input', a:in)
   endif
   let op = db#adapter#supports(a:url, 'filter') ? 'filter' : 'interactive'
@@ -157,8 +158,8 @@ function! db#systemlist(cmd, ...) abort
   return v:shell_error ? [] : lines
 endfunction
 
-function! s:filter_write(url, in, out) abort
-  let cmd = s:filter(a:url, a:in)
+function! s:filter_write(url, in, out, prefer_filter) abort
+  let cmd = s:filter(a:url, a:in, a:prefer_filter)
   let lines = s:systemlist(cmd)
   if len(lines)
     call add(lines, '')
@@ -190,7 +191,7 @@ function! db#connect(url) abort
 endfunction
 
 function! s:reload() abort
-  call s:filter_write(b:db, b:db_input, expand('%:p'))
+  call s:filter_write(b:db, b:db_input, expand('%:p'), get(b:, 'db_prefer_filter', 1))
   edit!
 endfunction
 
@@ -314,9 +315,10 @@ function! db#execute_command(mods, bang, line1, line2, cmd) abort
       if exists('lines')
         call writefile(lines, infile)
       endif
-      call s:filter_write(conn, infile, outfile)
+      call s:filter_write(conn, infile, outfile, exists('lines'))
       execute 'autocmd BufReadPost' fnameescape(tr(outfile, '\', '/'))
             \ 'let b:db_input =' string(infile)
+            \ '| let b:db_prefer_filter = ' exists('lines')
             \ '| let b:db =' string(conn)
             \ '| let w:db = b:db'
             \ '| call s:init()'
