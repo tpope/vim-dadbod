@@ -158,11 +158,10 @@ endfunction
 function! s:filter(url, in, ...) abort
   let prefer_filter = a:0 && a:1
   if db#adapter#supports(a:url, 'input') && !(prefer_filter && db#adapter#supports(a:url, 'filter'))
-    return db#adapter#dispatch(a:url, 'input', a:in)
+    return [db#adapter#dispatch(a:url, 'input', a:in), '']
   endif
   let op = db#adapter#supports(a:url, 'filter') ? 'filter' : 'interactive'
-  return s:shell(db#adapter#dispatch(a:url, op)) . ' ' .
-        \ db#adapter#call(a:url, 'input_flag', [], '< ') . shellescape(a:in)
+  return [db#adapter#dispatch(a:url, op), a:in]
 endfunction
 
 function! s:check_job_running(bang) abort
@@ -177,32 +176,29 @@ function! s:systemlist_job_cb(data, output, status) abort
 endfunction
 
 function! db#systemlist(cmd, ...) abort
-  let return_err_status = len(a:000) ==# 1 && type(a:1) ==# type(0)
-  let cmd = a:cmd
-  if !return_err_status && type(a:cmd) ==# type([])
-    let cmd += a:000
-  endif
-
   let job_result = { 'content': [], 'status': 0 }
-
-  let job = db#job#run(cmd, function('s:systemlist_job_cb', [job_result]))
+  let job = db#job#run(a:cmd + a:000, function('s:systemlist_job_cb', [job_result]), '')
   call db#job#wait(job)
-
-  if return_err_status
-    return [job_result.content, job_result.status]
-  endif
   return job_result.content
 endfunction
 
+function! s:systemlist_with_err(cmd)
+  let [cmd, stdin_file] = a:cmd
+  let job_result = { 'content': [], 'status': 0 }
+  let job = db#job#run(cmd, function('s:systemlist_job_cb', [job_result]), stdin_file)
+  call db#job#wait(job)
+  return [job_result.content, job_result.status]
+endfunction
+
 function! s:filter_write(url, in, out, mods, bang, prefer_filter) abort
-  let cmd = s:filter(a:url, a:in, a:prefer_filter)
+  let [cmd, stdin_file] = s:filter(a:url, a:in, a:prefer_filter)
   call s:check_job_running(a:bang)
   if !a:bang
     let t:db_job_running = 1
   endif
   echo 'DB: Running query...'
   call setbufvar(bufnr(a:out), '&modified', 1)
-  let job_id = db#job#run(cmd, function('s:query_callback', [a:out, a:in, a:url, a:mods, a:bang]))
+  let job_id = db#job#run(cmd, function('s:query_callback', [a:out, a:in, a:url, a:mods, a:bang]), stdin_file)
   call setbufvar(bufnr(a:out), 'db_job_id', job_id)
   return job_id
 endfunction
@@ -261,12 +257,12 @@ function! db#connect(url) abort
   endif
   let input = s:temp_content(db#adapter#call(url, 'auth_input', [], "\n"))
   let pattern = db#adapter#call(url, 'auth_pattern', [], 'auth\|login')
-  let [out, err] = db#systemlist(s:filter(url, input), 1)
+  let [out, err] = s:systemlist_with_err(s:filter(url, input))
   let out = join(out, "\n")
   if err && out =~? pattern && resolved =~# '^[^:]*://[^:/@]*@'
     let password = inputsecret('Password: ')
     let url = substitute(resolved, '://[^:/@]*\zs@', ':'.db#url#encode(password).'@', '')
-    let [out, err] = db#systemlist(s:filter(url, input), 1)
+    let [out, err] = s:systemlist_with_err(s:filter(url, input))
     let out = join(out, "\n")
     if !err
       let s:passwords[resolved] = password
@@ -279,7 +275,7 @@ function! db#connect(url) abort
 endfunction
 
 function! s:reload() abort
-  call s:filter_write(b:db, b:db_input, expand('%:p'), b:db_mods, b:db_bang, get(b:, 'db_prefer_filter', 1)
+  call s:filter_write(b:db, b:db_input, expand('%:p'), b:db_mods, b:db_bang, get(b:, 'db_prefer_filter', 1))
 endfunction
 
 let s:url_pattern = '\%([abgltvw]:\w\+\|\a[[:alnum:].+-]\+:\S*\|\$[[:alpha:]_]\S*\|[.~]\=/\S*\|[.~]\|\%(type\|profile\)=\S\+\)\S\@!'

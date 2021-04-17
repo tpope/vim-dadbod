@@ -27,9 +27,9 @@ function! s:nvim_job_cb(jobid, data, event) dict abort
   call extend(self.output, a:data)
 endfunction
 
-function! db#job#run(cmd, callback) abort
+function! db#job#run(cmd, callback, stdin_file) abort
   if has('nvim')
-    return jobstart(a:cmd, {
+    let jobid = jobstart(a:cmd, {
           \ 'on_stdout': function('s:nvim_job_cb'),
           \ 'on_stderr': function('s:nvim_job_cb'),
           \ 'on_exit': function('s:nvim_job_cb'),
@@ -38,6 +38,13 @@ function! db#job#run(cmd, callback) abort
           \ 'stdout_buffered': 1,
           \ 'stderr_buffered': 1,
           \ })
+
+    if !empty(a:stdin_file)
+      call chansend(jobid, readfile(a:stdin_file, 'b'))
+      call chanclose(jobid, 'stdin')
+    endif
+
+    return jobid
   endif
 
   if exists('*job_start')
@@ -55,11 +62,12 @@ function! db#job#run(cmd, callback) abort
       let opts['noblock'] = 1
     endif
 
-    if type(a:cmd) ==# type([])
-      return job_start(a:cmd, opts)
+    if !empty(a:stdin_file)
+      let opts['in_io'] = 'file'
+      let opts['in_name'] = a:stdin_file
     endif
 
-    return job_start([&shell, &shellcmdflag, a:cmd], opts)
+    return job_start(a:cmd, opts)
   endif
 
   throw 'DB: jobs not supported by this vim version.'
