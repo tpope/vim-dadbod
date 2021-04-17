@@ -317,8 +317,7 @@ endfunction
 
 function! db#execute_command(mods, bang, line1, line2, cmd) abort
   if !has('nvim') && !exists('*job_start')
-    echoerr 'DB: Vim version with +job feature is required.'
-    return
+    return 'echoerr "DB: Vim version with +job feature is required."'
   end
   if type(a:cmd) == type(0)
     " Error generating arguments
