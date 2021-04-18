@@ -352,8 +352,10 @@ function! db#execute_command(mods, bang, line1, line2, cmd) abort
       call s:filter_write(conn, infile, outfile, exists('lines'))
       let query.finish_reltime = reltime()
       let query.reltime = reltime(query.start_reltime, query.finish_reltime)
+      let msg = 'DB: query finished in ' . matchstr(reltimestr(query.reltime), '\d\+\.\d\{,3}') . 's'
       if a:bang
         silent execute mods 'split' outfile
+        echo msg
       else
         if db#adapter#call(conn, 'can_echo', [infile, outfile], 0)
           if v:shell_error
@@ -364,6 +366,7 @@ function! db#execute_command(mods, bang, line1, line2, cmd) abort
           return ''
         endif
         silent execute mods 'pedit' outfile
+        echo msg
       endif
     endif
   catch /^DB exec error: /
