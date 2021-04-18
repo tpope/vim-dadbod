@@ -8,8 +8,9 @@ let g:autoloaded_db_adapter = 1
 
 let s:loaded = {}
 
-function! s:prefix(adapter) abort
-  let scheme = tolower(matchstr(a:adapter, '^[^:]\+'))
+function! s:prefix(url) abort
+  let url = type(a:url) == type('') ? a:url : get(a:url, 'db_url', '')
+  let scheme = tolower(matchstr(url, '^[^:]\+'))
   let adapter = tr(scheme, '-+.', '_##')
   if empty(adapter)
     throw 'DB: no URL'
@@ -52,7 +53,8 @@ function! db#adapter#call(adapter, fn, args, ...) abort
 endfunction
 
 function! db#adapter#dispatch(url, fn, ...) abort
-  return call(s:fnname(a:url, a:fn), [a:url] + a:000)
+  let url = type(a:url) == type('') ? a:url : get(a:url, 'db_url', '')
+  return call(s:fnname(url, a:fn), [url] + a:000)
 endfunction
 
 function! db#adapter#schemes() abort
