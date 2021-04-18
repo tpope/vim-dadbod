@@ -9,10 +9,19 @@ function! db#url#decode(str) abort
 endfunction
 
 function! db#url#parse(url) abort
-  if type(a:url) == type({})
+  if type(a:url) == type('')
+    let url = a:url
+  elseif type(a:url) != type({})
+    throw 'DB: invalid URL'
+  elseif has_key(a:url, 'db_url')
+    let url = a:url.db_url
+  elseif has_key(a:url, 'url')
+    let url = a:url.url
+  elseif has_key(a:url, 'scheme') && has_key(a:url, 'params')
     return deepcopy(a:url)
+  else
+    throw 'DB: invalid URL'
   endif
-  let url = a:url
   let fragment = matchstr(a:url, '#\zs.*')
   let url = substitute(a:url, '#.*', '', '')
   let params = {}
