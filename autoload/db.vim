@@ -15,13 +15,11 @@ function! s:expand(expr) abort
 endfunction
 
 " Hide pointless `No matching autocommands` in Vim
-if !has('nvim')
-  augroup db_dummy_autocmd
-    autocmd!
-    autocmd User DBQueryStart "
-    autocmd User DBQueryFinished "
-  augroup END
-endif
+augroup db_dummy_autocmd
+  autocmd!
+  autocmd User DBQueryPre "
+  autocmd User DBQueryPost "
+augroup END
 
 let s:flags = '\%(:[p8~.htre]\|:g\=s\(.\).\{-\}\1.\{-\}\1\)*'
 let s:expandable = '\\*\%(<\w\+>\|:\@<=\~\|%[[:alnum:]]\@!\|\$\(\w\+\)\)' . s:flags
@@ -202,10 +200,12 @@ endfunction
 function! s:filter_write(url, in, out, mods, bang, prefer_filter) abort
   let [cmd, stdin_file] = s:filter(a:url, a:in, a:prefer_filter)
   call s:check_job_running(a:bang)
+  exe bufwinnr(a:out).'wincmd w'
+  doautocmd <nomodeline> User DBQueryPre
   if !a:bang
+    wincmd p
     let t:db_job_running = 1
   endif
-  doautocmd User DBQueryStart
   echo 'DB: Running query...'
   call setbufvar(bufnr(a:out), '&modified', 1)
   let job_id = db#job#run(cmd, function('s:query_callback', [a:out, a:in, a:url, a:mods, a:bang]), stdin_file)
@@ -214,29 +214,22 @@ function! s:filter_write(url, in, out, mods, bang, prefer_filter) abort
 endfunction
 
 function! s:query_callback(out, in, conn, mods, bang, lines, status)
-  if !a:bang
-    unlet! t:db_job_running
-  endif
-  let winnr = bufwinnr(bufnr(a:out))
+  let winnr = bufwinnr(a:out)
   let status_msg = a:status ? 'DB: Canceled' : 'DB: Done'
   call writefile(a:lines, a:out, 'b')
   call setbufvar(bufnr(a:out), '&modified', 0)
   call setbufvar(bufnr(a:out), 'db_job_id', '')
-  doautocmd User DBQueryFinished
 
   if winnr ==? -1
-    if db#adapter#call(a:conn, 'can_echo', [a:in, a:out], 0)
-      if a:status
-        echohl ErrorMsg
-      endif
-      echo substitute(join(readfile(a:out), "\n"), "\n*$", '', '')
-      echohl NONE
-      return ''
-    endif
-
     call s:open_preview(a:out, a:mods, a:bang)
-    echo status_msg
-    return
+    let winnr = bufwinnr(a:out)
+  endif
+
+  exe winnr.'wincmd w'
+  doautocmd <nomodeline> User DBQueryPost
+  if !a:bang
+    wincmd p
+    unlet! t:db_job_running
   endif
 
   let old_winnr = winnr()
@@ -309,7 +302,7 @@ function! s:init() abort
   let b:db = query
   let b:dadbod = query
   let w:db = b:db.db_url
-  setlocal nowrap nolist readonly nomodifiable nobuflisted
+  setlocal nowrap nolist readonly nomodifiable nobuflisted buftype=nowrite
   let &l:statusline = substitute(&statusline, '%\([^[:alpha:]{!]\+\)[fFt]', '%\1{db#url#safe_format(b:db.db_url)}', '')
   if empty(mapcheck('q', 'n'))
     nnoremap <buffer><silent> q :echoerr "DB: q map has been replaced by gq"<CR>
