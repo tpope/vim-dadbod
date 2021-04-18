@@ -217,10 +217,6 @@ function! s:cmd_split(cmd) abort
   return [url, cmd]
 endfunction
 
-if !exists('s:results')
-  let s:results = {}
-endif
-
 function! s:init() abort
   setlocal nowrap nolist readonly nomodifiable nobuflisted bufhidden=delete
   let &l:statusline = substitute(&statusline, '%\([^[:alpha:]{!]\+\)[fFt]', '%\1{db#url#safe_format(b:db)}', '')
@@ -337,7 +333,6 @@ function! db#execute_command(mods, bang, line1, line2, cmd) abort
             \ '| let b:db =' string(conn)
             \ '| let w:db = b:db'
             \ '| call s:init()'
-      let s:results[conn] = outfile
       if a:bang
         silent execute mods 'split' outfile
       else
