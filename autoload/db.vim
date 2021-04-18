@@ -343,12 +343,15 @@ function! db#execute_command(mods, bang, line1, line2, cmd) abort
             \ 'bang': a:bang,
             \ 'mods': mods,
             \ 'prefer_filter': exists('lines'),
+            \ 'start_reltime': reltime(),
             \ }
       let s:inputs[infile] = query
       execute 'autocmd BufReadPost' fnameescape(tr(outfile, '\', '/'))
             \ 'let b:db_input =' string(infile)
             \ '| call s:init()'
       call s:filter_write(conn, infile, outfile, exists('lines'))
+      let query.finish_reltime = reltime()
+      let query.reltime = reltime(query.start_reltime, query.finish_reltime)
       if a:bang
         silent execute mods 'split' outfile
       else
