@@ -206,7 +206,7 @@ function! db#connect(url) abort
 endfunction
 
 function! s:reload() abort
-  call s:filter_write(b:db, b:db_input, expand('%:p'), get(b:, 'db_prefer_filter', 1))
+  call s:filter_write(b:db, b:db_input, expand('%:p'), get(b:db, 'prefer_filter', 1))
   edit!
 endfunction
 
@@ -217,9 +217,19 @@ function! s:cmd_split(cmd) abort
   return [url, cmd]
 endfunction
 
+if !exists('s:inputs')
+  let s:inputs = {}
+endif
+
 function! s:init() abort
+  let query = get(s:inputs, b:db_input, {})
+  if empty(query)
+    return
+  endif
+  let b:db = query
+  let w:db = b:db.db_url
   setlocal nowrap nolist readonly nomodifiable nobuflisted bufhidden=delete
-  let &l:statusline = substitute(&statusline, '%\([^[:alpha:]{!]\+\)[fFt]', '%\1{db#url#safe_format(b:db)}', '')
+  let &l:statusline = substitute(&statusline, '%\([^[:alpha:]{!]\+\)[fFt]', '%\1{db#url#safe_format(b:db.db_url)}', '')
   nnoremap <buffer><silent> q :bd<CR>
   nnoremap <buffer><silent> gq :bdelete<CR>
   nnoremap <buffer><nowait> r :DB <C-R>=get(readfile(b:db_input, 1), 0)<CR>
@@ -326,13 +336,19 @@ function! db#execute_command(mods, bang, line1, line2, cmd) abort
       if exists('lines')
         call writefile(lines, infile)
       endif
-      call s:filter_write(conn, infile, outfile, exists('lines'))
+      let query = {
+            \ 'db_url': conn,
+            \ 'input': infile,
+            \ 'output': outfile,
+            \ 'bang': a:bang,
+            \ 'mods': mods,
+            \ 'prefer_filter': exists('lines'),
+            \ }
+      let s:inputs[infile] = query
       execute 'autocmd BufReadPost' fnameescape(tr(outfile, '\', '/'))
             \ 'let b:db_input =' string(infile)
-            \ '| let b:db_prefer_filter = ' exists('lines')
-            \ '| let b:db =' string(conn)
-            \ '| let w:db = b:db'
             \ '| call s:init()'
+      call s:filter_write(conn, infile, outfile, exists('lines'))
       if a:bang
         silent execute mods 'split' outfile
       else
