@@ -260,6 +260,9 @@ function! db#execute_command(mods, bang, line1, line2, cmd) abort
       endif
       if url =~# '^\%([abgltwv]:\|\$\)\w\+$'
         let target = db#connect(target)
+        if exists(url) && type(eval(url)) !=# type('')
+          return 'echoerr "DB: refusing to override non-string ' . target . '"'
+        endif
         return 'let ' . url . ' = '.string(target)
       endif
       throw 'DB: invalid variable: '.url
