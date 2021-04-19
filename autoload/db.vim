@@ -200,10 +200,13 @@ endfunction
 function! s:filter_write(url, in, out, mods, bang, prefer_filter) abort
   let [cmd, stdin_file] = s:filter(a:url, a:in, a:prefer_filter)
   call s:check_job_running(a:bang)
+  let was_outwin_focused = bufwinnr(a:out) ==? winnr()
   exe bufwinnr(a:out).'wincmd w'
   doautocmd <nomodeline> User DBQueryPre
   if !a:bang
-    wincmd p
+    if !was_outwin_focused
+      wincmd p
+    endif
     let t:db_job_running = 1
   endif
   echo 'DB: Running query...'
@@ -215,6 +218,7 @@ endfunction
 
 function! s:query_callback(out, in, conn, mods, bang, lines, status)
   let winnr = bufwinnr(a:out)
+  let was_outwin_focused = winnr ==? winnr()
   let status_msg = a:status ? 'DB: Canceled' : 'DB: Done'
   call writefile(a:lines, a:out, 'b')
   call setbufvar(bufnr(a:out), '&modified', 0)
@@ -228,7 +232,9 @@ function! s:query_callback(out, in, conn, mods, bang, lines, status)
   exe winnr.'wincmd w'
   doautocmd <nomodeline> User DBQueryPost
   if !a:bang
-    wincmd p
+    if !was_outwin_focused
+      wincmd p
+    endif
     unlet! t:db_job_running
   endif
 
