@@ -197,41 +197,41 @@ function! s:systemlist_with_err(cmd)
   return [job_result.content, job_result.status]
 endfunction
 
-function! s:filter_write(url, in, out, mods, bang, prefer_filter) abort
-  let [cmd, stdin_file] = s:filter(a:url, a:in, a:prefer_filter)
-  call s:check_job_running(a:bang)
-  let was_outwin_focused = bufwinnr(a:out) ==? winnr()
-  exe bufwinnr(a:out).'wincmd w'
+function! s:filter_write(query) abort
+  let [cmd, stdin_file] = s:filter(a:query.db_url, a:query.input, a:query.prefer_filter)
+  call s:check_job_running(a:query.bang)
+  let was_outwin_focused = bufwinnr(a:query.output) ==? winnr()
+  exe bufwinnr(a:query.output).'wincmd w'
   doautocmd <nomodeline> User DBQueryPre
-  if !a:bang
+  if !a:query.bang
     if !was_outwin_focused
       wincmd p
     endif
     let t:db_job_running = 1
   endif
   echo 'DB: Running query...'
-  call setbufvar(bufnr(a:out), '&modified', 1)
-  let job_id = db#job#run(cmd, function('s:query_callback', [a:out, a:in, a:url, a:mods, a:bang]), stdin_file)
-  call setbufvar(bufnr(a:out), 'db_job_id', job_id)
+  call setbufvar(bufnr(a:query.output), '&modified', 1)
+  let job_id = db#job#run(cmd, function('s:query_callback', [a:query]), stdin_file)
+  call setbufvar(bufnr(a:query.output), 'db_job_id', job_id)
   return job_id
 endfunction
 
-function! s:query_callback(out, in, conn, mods, bang, lines, status)
-  let winnr = bufwinnr(a:out)
+function! s:query_callback(query, lines, status)
+  let winnr = bufwinnr(a:query.output)
   let was_outwin_focused = winnr ==? winnr()
   let status_msg = a:status ? 'DB: Canceled' : 'DB: Done'
-  call writefile(a:lines, a:out, 'b')
-  call setbufvar(bufnr(a:out), '&modified', 0)
-  call setbufvar(bufnr(a:out), 'db_job_id', '')
+  call writefile(a:lines, a:query.output, 'b')
+  call setbufvar(bufnr(a:query.output), '&modified', 0)
+  call setbufvar(bufnr(a:query.output), 'db_job_id', '')
 
   if winnr ==? -1
-    call s:open_preview(a:out, a:mods, a:bang)
-    let winnr = bufwinnr(a:out)
+    call s:open_preview(a:query)
+    let winnr = bufwinnr(a:query.output)
   endif
 
   exe winnr.'wincmd w'
   doautocmd <nomodeline> User DBQueryPost
-  if !a:bang
+  if !a:query.bang
     if !was_outwin_focused
       wincmd p
     endif
@@ -251,12 +251,9 @@ function! s:query_callback(out, in, conn, mods, bang, lines, status)
   echo status_msg
 endfunction
 
-function! s:open_preview(outfile, mods, bang)
-  if a:bang
-    silent execute a:mods 'split' a:outfile
-  else
-    silent execute a:mods 'pedit' a:outfile
-  endif
+function! s:open_preview(query)
+  let win_type = a:query.bang ? 'split' : 'pedit'
+  silent execute a:query.mods win_type a:query.output
 endfunction
 
 function! db#connect(url) abort
@@ -285,7 +282,11 @@ function! db#connect(url) abort
 endfunction
 
 function! s:reload() abort
-  call s:filter_write(b:db, b:db_input, expand('%:p'), b:db_mods, b:db_bang, get(b:, 'db_prefer_filter', 1))
+  let query = get(s:inputs, b:db_input, {})
+  if empty(query)
+    return
+  endif
+  call s:filter_write(query)
 endfunction
 
 let s:url_pattern = '\%([abgltvw]:\w\+\|\a[[:alnum:].+-]\+:\S*\|\$[[:alpha:]_]\S*\|[.~]\=/\S*\|[.~]\|\%(type\|profile\)=\S\+\)\S\@!'
@@ -444,8 +445,8 @@ function! db#execute_command(mods, bang, line1, line2, cmd) abort
             \ '| call s:init()'
       execute 'autocmd BufUnload' fnameescape(tr(outfile, '\', '/'))
             \ 'call db#job#cancel(getbufvar(str2nr(expand("<abuf>")), "db_job_id", ""))'
-      call s:open_preview(outfile, mods, a:bang)
-      call s:filter_write(conn, infile, outfile, mods, a:bang, exists('lines'))
+      call s:open_preview(query)
+      call s:filter_write(query)
     endif
   catch /^DB exec error: /
     redraw
