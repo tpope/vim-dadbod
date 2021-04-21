@@ -217,9 +217,13 @@ function! s:filter_write(query) abort
 endfunction
 
 function! s:query_callback(query, lines, status)
+  let a:query.finish_reltime = reltime()
+  let a:query.reltime = reltime(a:query.start_reltime, a:query.finish_reltime)
+  let time_in_sec = matchstr(reltimestr(a:query.reltime), '\d\+\.\d\{,3}') . 's'
   let winnr = bufwinnr(a:query.output)
   let was_outwin_focused = winnr ==? winnr()
-  let status_msg = a:status ? 'DB: Canceled' : 'DB: Done'
+  let status_msg = a:status ? 'DB: Query canceled after ' : 'DB: Query finished in '
+  let status_msg .= time_in_sec
   call writefile(a:lines, a:query.output, 'b')
   call setbufvar(bufnr(a:query.output), '&modified', 0)
   call setbufvar(bufnr(a:query.output), 'db_job_id', '')
