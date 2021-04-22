@@ -22,8 +22,8 @@ function! db#url#parse(url) abort
   else
     throw 'DB: invalid URL'
   endif
-  let fragment = matchstr(a:url, '#\zs.*')
-  let url = substitute(a:url, '#.*', '', '')
+  let fragment = matchstr(url, '#\zs.*')
+  let url = substitute(url, '#.*', '', '')
   let params = {}
   for item in split(matchstr(url, '?\zs.*', ''), '[&;]')
     let [k, v; _] = split(item, '=') + ['', '']
@@ -34,7 +34,7 @@ function! db#url#parse(url) abort
       let params[k] = v
     endif
   endfor
-  let url = substitute(a:url, '?.*', '', '')
+  let url = substitute(url, '?.*', '', '')
   let scheme = '^\([[:alnum:].+-]\+\)'
   let match = matchlist(url, scheme . '://\%(\([^@/:]*\):\=\([^@/]*\)@\)\=\(\[[[:xdigit:]:]\+\]\|[^:/;,]*\)\%(:\(\d\+\)\)\=\($\|/.*\)')
   if !empty(match)
