@@ -25,11 +25,16 @@ function! s:server(url) abort
         \ (has_key(a:url, 'port') ? ',' . a:url.port : '')
 endfunction
 
+function! s:boolean_param_flag(url, param, flag) abort
+  let value = get(a:url.params, a:param, get(a:url.params, toupper(a:param[0]) . a:param[1 : -1], '0'))
+  return value =~# '^[1tTyY]' ? [a:flag] : []
+endfunction
+
 function! db#adapter#sqlserver#interactive(url) abort
   let url = db#url#parse(a:url)
   return ['sqlcmd', '-S', s:server(url)] +
-        \ (has_key(url.params, 'Encrypt') ? ['-N'] : []) +
-        \ (has_key(url.params, 'TrustServerCertificate') ? ['-C'] : []) +
+        \ s:boolean_param_flag(url, 'encrypt', '-N') +
+        \ s:boolean_param_flag(url, 'trustServerCertificate', '-C') +
         \ (has_key(url, 'user') ? [] : ['-E']) +
         \ db#url#as_argv(url, '', '', '', '-U ', '-P ', '-d ')
 endfunction

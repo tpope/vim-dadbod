@@ -162,7 +162,7 @@ required.
                                                 *dadbod-sqlserver*
 SQL Server ~
 >
-    sqlserver://[<user>[:<password>]@][<host>][:<port>]/[<database>][?Encrypt=True][&TrustServerCertificate=True]
+    sqlserver://[<user>[:<password>]@][<host>][:<port>]/[<database>][?encrypt=True][&trustServerCertificate=True]
     sqlserver://[<host>[:<port>]][;user=<user>][;...]
 <
 If the user and password are omitted, a trusted connection is used.
