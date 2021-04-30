@@ -8,7 +8,22 @@ function! db#adapter#sqlserver#canonicalize(url) abort
   if url =~# ';.*=' && url !~# '?'
     let url = tr(substitute(substitute(url, ';', '?', ''), ';$', '', ''), ';', '&')
   endif
-  return db#url#absorb_params(url, {
+  let parsed = db#url#parse(url)
+  for [param, value] in items(parsed.params)
+    let canonical = param !~# '\l' ? param : tolower(param[0]) . param[1 : -1]
+    if canonical !=# param
+      call remove(parsed.params, param)
+      if has_key(parsed.params, canonical)
+        continue
+      else
+        let parsed.params[canonical] = value
+      endif
+    endif
+    if value is# 1
+      let parsed.params[canonical] = 'true'
+    endif
+  endfor
+  return db#url#absorb_params(parsed, {
         \ 'user': 'user',
         \ 'userName': 'user',
         \ 'password': 'password',
