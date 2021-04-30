@@ -26,12 +26,16 @@ function! db#url#parse(url) abort
   let url = substitute(url, '#.*', '', '')
   let params = {}
   for item in split(matchstr(url, '?\zs.*', ''), '[&;]')
-    let [k, v; _] = split(item, '=') + ['', '']
-    let v = db#url#decode(tr(v, '+', ' '))
-    if has_key(params, k)
-      let params[k] .= "\f" . v
-    else
-      let params[k] = v
+    if item =~# '^[^=]\+$' && !has_key(params, item)
+      let params[item] = 1
+    elseif item =~# '.='
+      let [_, k, v; __] = matchlist(item, '^\([^=]*\)=\(.*\)')
+      let v = db#url#decode(tr(v, '+', ' '))
+      if has_key(params, k) && params[k] isnot# 1
+        let params[k] .= "\f" . v
+      else
+        let params[k] = v
+      endif
     endif
   endfor
   let url = substitute(url, '?.*', '', '')
@@ -161,6 +165,15 @@ function! db#url#encode(str) abort
   return db#url#path_encode(a:str, '/:+')
 endfunction
 
+function! s:encode_param(key, value) abort
+  if a:value is# 1 || a:value is# get(v:, 'true', 1) || (type(a:value) == type([]) && empty(a:value))
+    return a:key
+  else
+    let values = type(a:value) == type([]) ? copy(a:value) : split(a:value, "\f", 1)
+    return join(map(values, 'a:key."=".substitute(db#url#encode(v:val), "%20", "+", "g")'), '&')
+  endif
+endfunction
+
 function! db#url#format(url) abort
   if type(a:url) == type('')
     return a:url
@@ -193,7 +206,7 @@ function! db#url#format(url) abort
   if !empty(get(a:url, 'params'))
     let url .= '?'
     let url .= join(map(sort(keys(a:url.params)),
-          \ 'v:val."=".substitute(substitute(db#url#encode(a:url.params[v:val]), "%20", "+", "g"),"%0[Cc]","\\&".v:val."=","g")'), '&')
+          \ 's:encode_param(v:val, a:url.params[v:val])'), '&')
   elseif has_key(a:url, 'query')
     let url .= '?' . a:url.query
   endif
