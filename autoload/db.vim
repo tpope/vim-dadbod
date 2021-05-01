@@ -189,7 +189,7 @@ endfunction
 
 function! db#systemlist(cmd, ...) abort
   let job_result = { 'content': [], 'status': 0 }
-  let job = db#job#run(a:cmd + a:000, function('s:systemlist_job_cb', [job_result]), '')
+  let job = db#job#run(a:cmd, function('s:systemlist_job_cb', [job_result]), get(a:, 1, ''))
   call db#job#wait(job)
   return job_result.content
 endfunction
