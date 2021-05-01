@@ -131,6 +131,11 @@ function! s:canonicalize(url) abort
   throw 'DB: infinite loop resolving URL'
 endfunction
 
+function! db#cancel(...)
+  let buf = get(a:, 1, bufnr())
+  return db#job#cancel(getbufvar(buf, 'db_job_id', ''))
+endfunction
+
 function! db#resolve(url)
   return s:canonicalize(s:resolve(a:url))
 endfunction
@@ -200,6 +205,7 @@ endfunction
 function! s:filter_write(query) abort
   let [cmd, stdin_file] = s:filter(a:query.db_url, a:query.input, a:query.prefer_filter)
   call s:check_job_running(a:query.bang)
+  let a:query.start_reltime = reltime()
   let was_outwin_focused = bufwinnr(a:query.output) ==? winnr()
   exe bufwinnr(a:query.output).'wincmd w'
   doautocmd <nomodeline> User DBQueryPre
@@ -323,7 +329,7 @@ function! s:init() abort
   endif
   nnoremap <buffer><nowait> r :DB <C-R>=get(readfile(b:db_input, 1), 0)<CR>
   nnoremap <buffer><silent> R :call <SID>reload()<CR>
-  nnoremap <buffer><silent> <C-c> :call db#job#cancel(get(b:, 'db_job_id', ''))<CR>
+  nnoremap <buffer><silent> <C-c> :call db#cancel()<CR>
 endfunction
 
 function! db#unlet() abort
@@ -440,7 +446,6 @@ function! db#execute_command(mods, bang, line1, line2, cmd) abort
             \ 'bang': a:bang,
             \ 'mods': mods,
             \ 'prefer_filter': exists('lines'),
-            \ 'start_reltime': reltime(),
             \ }
       let s:inputs[infile] = query
       call writefile([], outfile, 'b')
@@ -448,7 +453,7 @@ function! db#execute_command(mods, bang, line1, line2, cmd) abort
             \ 'let b:db_input =' string(infile)
             \ '| call s:init()'
       execute 'autocmd BufUnload' fnameescape(tr(outfile, '\', '/'))
-            \ 'call db#job#cancel(getbufvar(str2nr(expand("<abuf>")), "db_job_id", ""))'
+            \ 'call db#cancel(str2nr(expand("<abuf>")))'
       call s:open_preview(query)
       call s:filter_write(query)
     endif
