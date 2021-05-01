@@ -6,6 +6,9 @@ let g:autoloaded_db = 1
 if !exists('s:passwords')
   let s:passwords = {}
 endif
+if !exists('s:buffers')
+  let s:buffers = {}
+endif
 
 function! s:expand(expr) abort
   return exists('*DotenvExpand') ? DotenvExpand(a:expr) : expand(a:expr)
@@ -31,6 +34,12 @@ function! s:resolve(url) abort
     endfor
     if exists('s:db')
       let url = s:db
+    endif
+  elseif type(a:url) == type(0)
+    if has_key(s:buffers, a:url)
+      let url = s:buffers[a:url].db_url
+    else
+      throw 'DB: buffer ' . a:url . ' does not contain a DB result'
     endif
   else
     let url = a:url
@@ -226,6 +235,7 @@ function! s:init() abort
   if empty(query)
     return
   endif
+  let s:buffers[bufnr()] = query
   let b:db = query
   let w:db = b:db.db_url
   setlocal nowrap nolist readonly nomodifiable nobuflisted bufhidden=delete
