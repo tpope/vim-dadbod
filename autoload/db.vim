@@ -215,7 +215,12 @@ function! db#connect(url) abort
 endfunction
 
 function! s:reload() abort
+  if has_key(b:db, 'finish_reltime')
+    call remove(b:db, 'finish_reltime')
+  endif
+  let b:db.start_reltime = reltime()
   call s:filter_write(b:db, b:db_input, expand('%:p'), b:db.prefer_filter)
+  let b:db.finish_reltime = reltime()
   edit!
 endfunction
 
@@ -356,12 +361,12 @@ function! db#execute_command(mods, bang, line1, line2, cmd) abort
             \ 'bang': a:bang,
             \ 'mods': mods,
             \ 'prefer_filter': exists('lines'),
-            \ 'start_reltime': reltime(),
             \ }
       let s:inputs[infile] = query
       execute 'autocmd BufReadPost' fnameescape(tr(outfile, '\', '/'))
             \ 'let b:db_input =' string(infile)
             \ '| call s:init()'
+      let query.start_reltime = reltime()
       call s:filter_write(conn, infile, outfile, exists('lines'))
       let query.finish_reltime = reltime()
       let query.reltime = reltime(query.start_reltime, query.finish_reltime)
