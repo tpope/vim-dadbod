@@ -242,6 +242,7 @@ function! s:init() abort
   endif
   let s:buffers[bufnr()] = query
   let b:db = query
+  let b:dadbod = query
   let w:db = b:db.db_url
   setlocal nowrap nolist readonly nomodifiable nobuflisted bufhidden=delete
   let &l:statusline = substitute(&statusline, '%\([^[:alpha:]{!]\+\)[fFt]', '%\1{db#url#safe_format(b:db.db_url)}', '')
