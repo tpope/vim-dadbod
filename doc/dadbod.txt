@@ -69,6 +69,12 @@ Set a variable with |:let|, or use |:DB| to normalize the URL first:
 <
 ADAPTERS                                        *dadbod-adapters*
 
+All hierarchical URLs (those that contain ://) support optional query
+parameters using the standard URL syntax: `?param1=value1&param2=value2`.
+Handling these parameters is up to the individual adapters.  By default,
+unrecognized parameters are ignored.  Pass Boolean parameters as the literal
+strings "true" and "false" (e.g., `?ssl=true`).
+
                                                 *dadbod-dbext*
 dbext ~
 >
@@ -80,15 +86,11 @@ For supported adapters, dbext modelines and profiles can be used directly.
                                                 *dadbod-clickhouse*
 ClickHouse ~
 >
-    clickhouse://[<host>[:port]]/[<database>][?setting=value[&another_setting=value]]
-    clickhouse:[database][?setting=value[&another_setting=value]]
+    clickhouse://[<host>[:port]]/[<database>]
+    clickhouse:[database]
 <
-It has two special parameters:
-
-* secure: if set to "1", "true" or "True", TLS is used
-* format: any valid ClickHouse format
-
-Example: clickhouse:///database?format=PrettyNoEscape&secure=1
+Use the `secure` query parameter to enable TLS, and the `format` query
+parameter to set the ClickHouse format (e.g., PrettyNoEscape).
 
                                                 *dadbod-impala*
 Impala ~
@@ -102,22 +104,26 @@ jq ~
     jq:/absolute/path
     jq:C:/windows/path
 <
-An empty path runs jq without input, see --null-input parameter.
+An empty path runs jq without input, see the --null-input parameter.
 
                                                 *dadbod-mongodb*
 MongoDB ~
 >
-    mongodb://[<user>[:<password>]@][<host>[:<port>]]/[<database>][?ssl=true]
+    mongodb://[<user>[:<password>]@][<host>[:<port>]]/[<database>]
     mongodb:[<database>]
 <
+Any valid MongoDB connection string URI can be used.
+
                                                 *dadbod-mysql*
 MySQL ~
 >
     mysql://[<user>[:<password>]@][<host>[:<port>]]/[database]
     mysql://[<user>[:<password>]@][<%2Fsocket%2Fpath>]/[<database>]
-    mysql:///[<database>]?login-path=<login-path>
     mysql:[<database>]
 <
+Supported query parameters are `login-path`, `protocol`, `ssl-ca`, `ssl-cert`, and
+`ssl-key`, which pass the corresponding command line optins.
+
                                                 *dadbod-oracle*
 Oracle ~
 >
@@ -141,7 +147,8 @@ PostgreSQL ~
     postgresql://[<user>[:<password>]@][<%2Fsocket%2Fpath>]/[<database>]
     postgresql:[<database>]
 <
-For interop, postgres:// URLs are also accepted.
+Any valid PostgreSQL connection URI can be used.  The postgres:// variant is
+also accepted.
 
                                                 *dadbod-presto*
 Presto ~
@@ -160,10 +167,14 @@ required.
                                                 *dadbod-sqlserver*
 SQL Server ~
 >
-    sqlserver://[<user>[:<password>]@][<host>][:<port>]/[<database>][?encrypt=True][&trustServerCertificate=True]
+    sqlserver://[<user>[:<password>]@][<host>][:<port>]/[<database>]
     sqlserver://[<host>[:<port>]][;user=<user>][;...]
 <
-If the user and password are omitted, a trusted connection is used.
+Supported query parameters are `secure` and `trustServerCertificate`, which
+correspond to connection properties of the same name.
+
+To set the `integratedSecurity` connection property and use a trusted
+connection, omit the user and password.
 
                                                 *dadbod-sqlite*
 SQLite ~
