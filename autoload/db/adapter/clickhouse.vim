@@ -13,27 +13,18 @@ function! db#adapter#clickhouse#canonicalize(url) abort
         \ 'database': 'database'})
 endfunction
 
-function! s:process_url(url) abort
-  " Function moves special parameters to url
-  "  secure: http/https, 1 ot 'true' for
-  let url = db#url#parse(a:url)
-  if get(url.params, 'secure') =~# '^[1Tt]'
-    let url.params.secure = ''
-  elseif has_key(url.params, 'secure')
-    unlet url.params.secure
-  endif
-  return url
-endfunction
-
 function! db#adapter#clickhouse#interactive(url, ...) abort
-  let url = s:process_url(a:url)
+  let url = db#url#parse(a:url)
   let cmd = ['clickhouse-client']
-  if has_key(url.params, 'secure')
-    call add(cmd, '--secure')
-    unlet url.params.secure
-  endif
   for [k, v] in items(url.params)
-    call extend(cmd, ['--' . k, v])
+    " All settings without value are passed as single argument, for example:
+    " ?secure => --secure
+    " ?multiquery => --multiquery
+    if v != 1
+      call extend(cmd, ['--' . k, v])
+    else
+      call extend(cmd, ['--' . k])
+    endif
   endfor
   return cmd +
         \ db#url#as_argv(a:url, '--host ', '--port ', '', '--user ', '--port ', '--database ')

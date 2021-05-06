@@ -86,11 +86,15 @@ For supported adapters, dbext modelines and profiles can be used directly.
                                                 *dadbod-clickhouse*
 ClickHouse ~
 >
-    clickhouse://[<host>[:port]]/[<database>]
-    clickhouse:[database]
+    clickhouse://[<host>[:port]]/[<database>][?[setting=arg][&setting-without-argument]]
+    clickhouse:[database][?[setting=arg][&setting-without-argument]]
 <
-Use the `secure` query parameter to enable TLS, and the `format` query
-parameter to set the ClickHouse format (e.g., PrettyNoEscape).
+`clickhouse-client` supports two types of command line parameters:
+
+* without additional arguments, e.g. `--secure` and `--multiquery`;
+* with parameters, e.g. `--max_final_threads arg`.
+
+To pass parameter without argument use `clickhouse:?secure` notation.
 
                                                 *dadbod-impala*
 Impala ~
