@@ -89,8 +89,7 @@ ClickHouse ~
     clickhouse://[<host>[:port]]/[<database>]
     clickhouse:[database]
 <
-Use the `secure` query parameter to enable TLS, and the `format` query
-parameter to set the ClickHouse format (e.g., PrettyNoEscape).
+Use the `secure` query parameter to enable TLS.
 
                                                 *dadbod-impala*
 Impala ~
