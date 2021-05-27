@@ -216,7 +216,7 @@ function! s:filter_write(query) abort
     if !was_outwin_focused
       wincmd p
     endif
-    let t:db_job_running = 1
+    call settabvar(a:query.tabnr, 'db_job_running', 1)
   endif
   echo 'DB: Running query...'
   call setbufvar(bufnr(a:query.output), '&modified', 1)
@@ -248,7 +248,7 @@ function! s:query_callback(query, lines, status)
     if !was_outwin_focused
       wincmd p
     endif
-    unlet! t:db_job_running
+    call settabvar(a:query.tabnr, 'db_job_running', 0)
   endif
 
   let old_winnr = winnr()
@@ -449,6 +449,7 @@ function! db#execute_command(mods, bang, line1, line2, cmd) abort
             \ 'bang': a:bang,
             \ 'mods': mods,
             \ 'prefer_filter': exists('lines'),
+            \ 'tabnr': tabpagenr(),
             \ }
       let s:inputs[infile] = query
       call writefile([], outfile, 'b')
