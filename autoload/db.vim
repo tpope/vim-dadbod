@@ -240,7 +240,7 @@ function! s:init() abort
   if empty(query)
     return
   endif
-  let s:buffers[bufnr()] = query
+  let s:buffers[bufnr('')] = query
   let b:db = query
   let b:dadbod = query
   let w:db = b:db.db_url
