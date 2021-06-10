@@ -177,7 +177,8 @@ function! s:filter(url, in, ...) abort
 endfunction
 
 function! s:check_job_running(bang) abort
-  if !a:bang && get(t:, 'db_job_running', 0)
+  let last_preview_buffer = get(t:, 'db_last_preview_buffer', 0)
+  if !a:bang && last_preview_buffer && !empty(getbufvar(last_preview_buffer, 'db_job_id'))
     throw 'DB: Query already running for this tab'
   endif
 endfunction
@@ -216,7 +217,7 @@ function! s:filter_write(query) abort
     if !was_outwin_focused
       wincmd p
     endif
-    call settabvar(a:query.tabnr, 'db_job_running', 1)
+    call settabvar(a:query.tabnr, 'db_last_preview_buffer', bufnr(a:query.output))
   endif
   echo 'DB: Running query...'
   call setbufvar(bufnr(a:query.output), '&modified', 1)
@@ -248,7 +249,6 @@ function! s:query_callback(query, lines, status)
     if !was_outwin_focused
       wincmd p
     endif
-    call settabvar(a:query.tabnr, 'db_job_running', 0)
   endif
 
   let old_winnr = winnr()
