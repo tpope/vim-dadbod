@@ -1,6 +1,6 @@
 " dadbod.vim
 " Maintainer:   Tim Pope <http://tpo.pe/>
-" Version:      1.3
+" Version:      1.4
 " GetLatestVimScripts: 5665 1 :AutoInstall: dadbod.vim
 
 if exists('g:loaded_dadbod') || &cp || v:version < 700
