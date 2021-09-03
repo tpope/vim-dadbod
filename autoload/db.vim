@@ -295,11 +295,7 @@ function! db#connect(url) abort
 endfunction
 
 function! s:reload() abort
-  let query = get(s:inputs, b:db_input, {})
-  if empty(query)
-    return
-  endif
-  call s:filter_write(query)
+  call s:filter_write(b:db)
 endfunction
 
 let s:url_pattern = '\%([abgltvw]:\w\+\|\a[[:alnum:].+-]\+:\S*\|\$[[:alpha:]_]\S*\|[.~]\=/\S*\|[.~]\|\%(type\|profile\)=\S\+\)\S\@!'
