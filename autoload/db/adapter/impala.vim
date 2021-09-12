@@ -57,4 +57,3 @@ function! db#adapter#impala#massage(input) abort
   endif
   return a:input . "\n;"
 endfunction
-
