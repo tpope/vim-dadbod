@@ -295,7 +295,7 @@ function! db#execute_command(mods, bang, line1, line2, cmd) abort
       let s:db = conn
       return 'try|execute '.string(cmd).'|finally|call db#unlet()|endtry'
     endif
-    if empty(cmd) && a:line2 <= 0
+    if empty(cmd) && a:line2 < 0
       if !db#adapter#supports(conn, 'interactive')
         return 'echoerr "DB: interactive mode not supported for ' . db#url#parse(conn).scheme . '"'
       end
@@ -311,7 +311,7 @@ function! db#execute_command(mods, bang, line1, line2, cmd) abort
       let infile = file . '.' . db#adapter#call(conn, 'input_extension', [], 'sql')
       let outfile = file . '.' . db#adapter#call(conn, 'output_extension', [], 'dbout')
       let maybe_infile = matchstr(cmd, '^<\s*\zs.*\S')
-      if a:line2 > 0
+      if a:line2 >= 0
         if a:line1 == 0
           let saved = [&selection, &clipboard, @@]
           try
@@ -320,7 +320,7 @@ function! db#execute_command(mods, bang, line1, line2, cmd) abort
               let setup = "`[v`]"
             elseif a:line2 == 2
               let setup = "`[\<C-V>`]"
-            elseif a:line2 == 3
+            elseif a:line2 == 0 || a:line2 == 3
               let setup = "`<" . visualmode() . "`>"
             else
               return 'echoerr ' . string('DB: Invalid range')
@@ -474,10 +474,10 @@ function! db#range(type) abort
   return get({
         \ 'line': "'[,']",
         \ 'char': "0,1",
-        \ 'block': "0,2",
+        \ 'block': line('$') < 2 ? "0,1" : "0,2",
         \ 'V': "'<,'>",
-        \ 'v': "0,3",
-        \ "\<C-V>": "0,3",
+        \ 'v': "0",
+        \ "\<C-V>": "0",
         \ 0: "%",
         \ 1: "."},
         \ a:type, '.,.+' . (a:type-1)) . 'DB'
