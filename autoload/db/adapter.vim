@@ -23,7 +23,7 @@ function! s:prefix(url) abort
   let file = 'autoload/'.substitute(tr(prefix, '#', '/'), '/[^/]*$', '.vim', '')
   if has_key(s:loaded, adapter) || prefix !~# '#'
     return prefix
-  elseif !empty(findfile(file, escape(&rtp, ' ')))
+  elseif !empty(findfile(file, escape(&rtp, ' '))) || (exists('*nvim_get_runtime_file') && !empty(nvim_get_runtime_file(file, v:false)))
     execute 'runtime!' file
     let s:loaded[adapter] = 1
     return prefix
@@ -58,8 +58,12 @@ function! db#adapter#dispatch(url, fn, ...) abort
 endfunction
 
 function! db#adapter#schemes() abort
+  let rtp = &rtp
+  if exists('*nvim_list_runtime_paths')
+    let rtp = join(nvim_list_runtime_paths(), ',')
+  endif
   return map(
-        \ split(globpath(escape(&rtp, ' '), 'autoload/db/adapter/*.vim'), "\n"),
+        \ split(globpath(escape(rtp, ' '), 'autoload/db/adapter/*.vim'), "\n"),
         \ 'tr(fnamemodify(v:val, ":t:r"), "_", "-")') +
         \ filter(map(keys(g:), 'matchstr(v:val, "^db_adapter_\\zs.*")'), 'len(v:val)')
 endfunction
