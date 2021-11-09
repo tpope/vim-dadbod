@@ -2,6 +2,10 @@ if exists('g:autoloaded_db_postgres')
   finish
 endif
 let g:autoloaded_db_postgres = 1
+"For windows if psql not in path
+let g:psql_engine = "C:\\'Program Files'\\'pgAdmin 4'\\v4\\runtime\\psql.exe"
+" let g:psql_engine = \"psql"
+
 
 function! db#adapter#postgresql#canonicalize(url) abort
   let url = substitute(a:url, '^[^:]*:/\=/\@!', 'postgresql:///', '')
@@ -15,7 +19,7 @@ endfunction
 
 function! db#adapter#postgresql#interactive(url, ...) abort
   let short = matchstr(a:url, '^[^:]*:\%(///\)\=\zs[^/?#]*$')
-  return ['psql', '-w'] + (a:0 ? a:1 : []) + ['--dbname', len(short) ? short : a:url]
+  return [g:psql_engine, '-w'] + (a:0 ? a:1 : []) + ['--dbname', len(short) ? short : a:url]
 endfunction
 
 function! db#adapter#postgresql#filter(url) abort
@@ -37,7 +41,7 @@ function! s:parse_columns(output, ...) abort
 endfunction
 
 function! db#adapter#postgresql#complete_database(url) abort
-  let cmd = ['psql', '--no-psqlrc', '-wltAX', substitute(a:url, '/[^/]*$', '/postgres', '')]
+  let cmd = [g:psql_engine, '--no-psqlrc', '-wltAX', substitute(a:url, '/[^/]*$', '/postgres', '')]
   return s:parse_columns(db#systemlist(cmd), 0)
 endfunction
 
