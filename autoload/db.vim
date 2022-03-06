@@ -10,6 +10,11 @@ if !exists('s:buffers')
   let s:buffers = {}
 endif
 
+if !exists('s:vim_job')
+  let s:vim_job = {'output': '', 'exit': 0, 'close': 0, 'exit_status': 0 }
+endif
+
+
 function! s:expand(expr) abort
   return exists('*DotenvExpand') ? DotenvExpand(a:expr) : expand(a:expr)
 endfunction
@@ -131,12 +136,12 @@ function! s:canonicalize(url) abort
   throw 'DB: infinite loop resolving URL'
 endfunction
 
-function! db#cancel(...)
+function! db#cancel(...) abort
   let buf = get(a:, 1, bufnr())
-  return db#job#cancel(getbufvar(buf, 'db_job_id', ''))
+  return s:job_cancel(getbufvar(buf, 'db_job_id', ''))
 endfunction
 
-function! db#resolve(url)
+function! db#resolve(url) abort
   return s:canonicalize(s:resolve(a:url))
 endfunction
 
@@ -190,19 +195,19 @@ endfunction
 
 function! db#systemlist(cmd, ...) abort
   let job_result = { 'content': [], 'status': 0 }
-  let job = db#job#run(a:cmd, function('s:systemlist_job_cb', [job_result]), get(a:, 1, ''))
-  call db#job#wait(job)
+  let job = s:job_run(a:cmd, function('s:systemlist_job_cb', [job_result]), get(a:, 1, ''))
+  call s:job_wait(job)
   if !empty(job_result.status)
     return []
   endif
   return job_result.content
 endfunction
 
-function! s:systemlist_with_err(cmd)
+function! s:systemlist_with_err(cmd) abort
   let [cmd, stdin_file] = a:cmd
   let job_result = { 'content': [], 'status': 0 }
-  let job = db#job#run(cmd, function('s:systemlist_job_cb', [job_result]), stdin_file)
-  call db#job#wait(job)
+  let job = s:job_run(cmd, function('s:systemlist_job_cb', [job_result]), stdin_file)
+  call s:job_wait(job)
   return [job_result.content, job_result.status]
 endfunction
 
@@ -221,12 +226,12 @@ function! s:filter_write(query) abort
   endif
   echo 'DB: Running query...'
   call setbufvar(bufnr(a:query.output), '&modified', 1)
-  let job_id = db#job#run(cmd, function('s:query_callback', [a:query]), stdin_file)
+  let job_id = s:job_run(cmd, function('s:query_callback', [a:query]), stdin_file)
   call setbufvar(bufnr(a:query.output), 'db_job_id', job_id)
   return job_id
 endfunction
 
-function! s:query_callback(query, lines, status)
+function! s:query_callback(query, lines, status) abort
   let a:query.finish_reltime = reltime()
   let a:query.reltime = reltime(a:query.start_reltime, a:query.finish_reltime)
   let time_in_sec = matchstr(reltimestr(a:query.reltime), '\d\+\.\d\{,3}') . 's'
@@ -264,7 +269,7 @@ function! s:query_callback(query, lines, status)
   echo status_msg
 endfunction
 
-function! s:open_preview(query)
+function! s:open_preview(query) abort
   let win_type = a:query.bang ? 'split' : 'pedit'
   silent execute a:query.mods win_type a:query.output
 endfunction
@@ -595,4 +600,126 @@ function! db#clobber_dbext(...) abort
     let b:dbext_{key} = value
   endfor
   return opts
+endfunction
+
+function! s:vim_job.cb(job, data) dict abort
+  if type(a:data) ==? type(0)
+    let self.exit = 1
+    let self.exit_status = a:data
+    return self.call_cb_if_finished()
+  endif
+  let self.output .= a:data
+endfunction
+
+function! s:vim_job.close_cb(channel) dict abort
+  let self.close = 1
+  return self.call_cb_if_finished()
+endfunction
+
+function! s:vim_job.call_cb_if_finished() abort
+  if self.close && self.exit
+    return self.callback(split(self.output, "\n", 1), self.exit_status)
+  endif
+endfunction
+
+function! s:nvim_job_cb(jobid, data, event) dict abort
+  if a:event ==? 'exit'
+    return self.callback(self.output, a:data)
+  endif
+  call extend(self.output, a:data)
+endfunction
+
+function! s:job_run(cmd, callback, stdin) abort
+  if has('nvim')
+    let jobid = jobstart(a:cmd, {
+          \ 'on_stdout': function('s:nvim_job_cb'),
+          \ 'on_stderr': function('s:nvim_job_cb'),
+          \ 'on_exit': function('s:nvim_job_cb'),
+          \ 'output': [],
+          \ 'callback': a:callback,
+          \ 'stdout_buffered': 1,
+          \ 'stderr_buffered': 1,
+          \ })
+
+    if !empty(a:stdin)
+      let stdin = a:stdin
+      if filereadable(stdin)
+        let stdin = readfile(stdin, 'b')
+      endif
+      call chansend(jobid, stdin)
+      call chanclose(jobid, 'stdin')
+    endif
+
+    return jobid
+  endif
+
+  if exists('*job_start')
+    let fn = copy(s:vim_job)
+    let fn.callback = a:callback
+    let opts = {
+          \ 'out_cb': fn.cb,
+          \ 'err_cb': fn.cb,
+          \ 'exit_cb': fn.cb,
+          \ 'close_cb': fn.close_cb,
+          \ 'mode': 'raw'
+          \ }
+
+    if has('patch-8.1.350')
+      let opts['noblock'] = 1
+    endif
+
+    let job = job_start(a:cmd, opts)
+
+    if !empty(a:stdin)
+      let stdin = a:stdin
+      if filereadable(stdin)
+        let stdin = exists('*readblob') ? readblob(stdin) : readfile(stdin, 'B')
+      endif
+      call ch_sendraw(job, stdin)
+      call ch_close_in(job)
+      let fn.close = 1
+    endif
+
+    return job
+  endif
+
+  throw 'DB: jobs not supported by this vim version.'
+endfunction
+
+function! s:job_wait(job, ...) abort
+  let timeout = get(a:, 1, -1)
+
+  if has('nvim')
+    return jobwait([a:job], timeout)[0] == -1 ? v:false : v:true
+  endif
+
+  let finished = v:true
+  if exists('*job_status')
+    let ms = 0
+    let max = timeout
+    while job_status(a:job) ==# 'run'
+      if ms == max
+        let finished = v:false
+        break
+      endif
+      let ms += 1
+      sleep 1m
+    endwhile
+  endif
+
+  return finished
+endfunction
+
+function! s:job_cancel(job) abort
+  if empty(a:job)
+    return
+  endif
+
+  if has('nvim')
+    return jobstop(a:job)
+  endif
+
+  if exists('*job_stop')
+    return job_stop(a:job)
+  endif
 endfunction
