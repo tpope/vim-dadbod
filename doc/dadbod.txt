@@ -44,6 +44,12 @@ mostly get the point across:
     mongodb:///admin
     redis:///
 <
+Special characters in URL fields must be URL escaped.  For example, if the
+user is "me@example.com", and the password is "my#password?", the URL might
+look like this:
+>
+    mysql://me%40example.com:my%23password%3F@localhost/database
+<
 Additionally, one can give:
 
 * A Vim variable (e.g., g:foo, w:bar, t:baz, b:quux) or environment variable
