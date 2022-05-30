@@ -1,8 +1,3 @@
-if exists('g:autoloaded_db_clickhouse')
-  finish
-endif
-let g:autoloaded_db_clickhouse = 1
-
 function! db#adapter#clickhouse#canonicalize(url) abort
   let url = substitute(a:url, '^[^:]*:/\=/\@!', 'clickhouse:///', '')
   return db#url#absorb_params(url, {

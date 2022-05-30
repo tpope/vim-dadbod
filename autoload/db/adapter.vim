@@ -1,11 +1,6 @@
 " Location: autoload/db/adapter.vim
 " Author: Tim Pope <http://tpo.pe/>
 
-if exists('g:autoloaded_db_adapter')
-  finish
-endif
-let g:autoloaded_db_adapter = 1
-
 let s:loaded = {}
 
 function! s:prefix(url) abort
@@ -24,7 +19,7 @@ function! s:prefix(url) abort
   if has_key(s:loaded, adapter) || prefix !~# '#'
     return prefix
   elseif !empty(findfile(file, escape(&rtp, ' '))) || (exists('*nvim_get_runtime_file') && !empty(nvim_get_runtime_file(file, v:false)))
-    execute 'runtime!' file
+    execute 'runtime' file
     let s:loaded[adapter] = 1
     return prefix
   endif

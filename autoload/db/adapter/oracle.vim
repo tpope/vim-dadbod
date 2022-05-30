@@ -1,8 +1,3 @@
-if exists('g:autoloaded_db_adapter_oracle')
-  finish
-endif
-let g:autoloaded_db_adapter_oracle = 1
-
 function! db#adapter#oracle#canonicalize(url) abort
   return substitute(substitute(substitute(substitute(a:url,
         \ '^oracle:\zs\([^/@:]*\)/\([^/@:]*\)@/*\(.*\)$', '//\1:\2@\3', ''),

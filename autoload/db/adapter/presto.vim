@@ -1,8 +1,3 @@
-if exists('g:autoloaded_db_presto')
-  finish
-endif
-let g:autoloaded_db_presto = 1
-
 function! s:command_for_url(params) abort
   let cmd = ['presto']
   for [k, v] in items(a:params)

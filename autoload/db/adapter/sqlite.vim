@@ -1,8 +1,3 @@
-if exists('g:autoloaded_db_sqlite')
-  finish
-endif
-let g:autoloaded_db_sqlite = 1
-
 function! db#adapter#sqlite#canonicalize(url) abort
   return db#url#canonicalize_file(a:url)
 endfunction

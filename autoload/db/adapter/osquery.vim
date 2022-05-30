@@ -1,8 +1,3 @@
-if exists('g:autoloaded_db_osquery')
-  finish
-endif
-let g:autoloaded_db_osquery = 1
-
 function! db#adapter#osquery#canonicalize(url) abort
   return db#url#canonicalize_file(a:url)
 endfunction

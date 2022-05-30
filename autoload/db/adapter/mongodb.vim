@@ -1,8 +1,3 @@
-if exists('g:autoloaded_db_mongodb')
-  finish
-endif
-let g:autoloaded_db_mongodb = 1
-
 function! db#adapter#mongodb#canonicalize(url) abort
   return substitute(a:url, '^mongo\%(db\)\=:/\@!', 'mongodb:///', '')
 endfunction

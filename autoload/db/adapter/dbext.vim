@@ -1,8 +1,3 @@
-if exists('g:autoloaded_db_adapter_dbext')
-  finish
-endif
-let g:autoloaded_db_adapter_dbext = 1
-
 function! s:transfer(source, dest, skey, dkey) abort
   if has_key(a:source, a:skey)
     if a:source[a:skey] !~# '^@ask'

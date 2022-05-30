@@ -1,8 +1,3 @@
-if exists('g:autoloaded_db_adapter_file')
-  finish
-endif
-let g:autoloaded_db_adapter_file = 1
-
 function! db#adapter#file#canonicalize(url) abort
   let file = expand(db#url#file_path(a:url))
   for scheme in db#adapter#schemes()

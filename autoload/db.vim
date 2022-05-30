@@ -1,8 +1,3 @@
-if exists('g:autoloaded_db')
-  finish
-endif
-let g:autoloaded_db = 1
-
 if !exists('s:passwords')
   let s:passwords = {}
 endif

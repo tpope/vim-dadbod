@@ -1,8 +1,3 @@
-if exists('g:autoloaded_db_adapter_sqlserver')
-  finish
-endif
-let g:autoloaded_db_adapter_sqlserver = 1
-
 function! db#adapter#sqlserver#canonicalize(url) abort
   let url = a:url
   if url =~# ';.*=' && url !~# '?'

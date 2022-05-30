@@ -1,8 +1,3 @@
-if exists('g:autoloaded_db_jq')
-  finish
-endif
-let g:autoloaded_db_jq = 1
-
 function! db#adapter#jq#canonicalize(url) abort
   return db#url#canonicalize_file(a:url)
 endfunction

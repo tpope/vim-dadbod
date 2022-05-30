@@ -1,8 +1,3 @@
-if exists('g:autoloaded_db_impala')
-  finish
-endif
-let g:autoloaded_db_impala = 1
-
 function! s:command_for_url(params) abort
   let cmd = ['impala-shell']
   for [k, v] in items(a:params)

@@ -1,8 +1,3 @@
-if exists('g:autoloaded_db_postgres')
-  finish
-endif
-let g:autoloaded_db_postgres = 1
-
 function! db#adapter#postgresql#canonicalize(url) abort
   let url = substitute(a:url, '^[^:]*:/\=/\@!', 'postgresql:///', '')
   return db#url#absorb_params(url, {

@@ -1,8 +1,3 @@
-if exists('g:autoloaded_db_mysql')
-  finish
-endif
-let g:autoloaded_db_mysql = 1
-
 function! db#adapter#mysql#canonicalize(url) abort
   let url = substitute(a:url, '^mysql\d*:/\@!', 'mysql:///', '')
   " JDBC

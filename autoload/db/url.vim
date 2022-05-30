@@ -1,9 +1,3 @@
-if exists('g:autoloaded_db_url')
-  finish
-endif
-
-let g:autoloaded_db_url = 1
-
 function! db#url#decode(str) abort
   return substitute(a:str, '%\(\x\x\)', '\=nr2char("0x".submatch(1))', 'g')
 endfunction

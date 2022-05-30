@@ -1,8 +1,3 @@
-if exists('g:autoloaded_db_redis')
-  finish
-endif
-let g:autoloaded_db_redis = 1
-
 function! db#adapter#redis#input_extension() abort
   return 'redis'
 endfunction
