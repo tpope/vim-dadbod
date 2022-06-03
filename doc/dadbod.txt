@@ -126,8 +126,8 @@ MySQL ~
     mysql://[<user>[:<password>]@][<%2Fsocket%2Fpath>]/[<database>]
     mysql:[<database>]
 <
-Supported query parameters are `login-path`, `protocol`, `ssl-ca`, `ssl-cert`, and
-`ssl-key`, which pass the corresponding command line optins.
+Query parameters such as `login-path`, `protocol`, `ssl-ca`, `ssl-cert`, and
+`ssl-key` are passed as the corresponding command line options.
 
                                                 *dadbod-oracle*
 Oracle ~
