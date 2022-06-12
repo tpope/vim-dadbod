@@ -7,19 +7,17 @@ function! s:command_for_url(params) abort
 endfunction
 
 function! s:params(url) abort
-  let params = db#url#parse(a:url)
-  let presto_params = { 'server': 'localhost' }
-  if has_key(params, 'host')
-    let presto_params.server = params.host
+  let url = db#url#parse(a:url)
+  let presto_params = {}
+  let presto_params.server = get(url, 'host', 'localhost')
+  if has_key(url, 'port')
+    let presto_params.server .= ':' . url.port
   endif
-  if has_key(params, 'port')
-    let presto_params.server .= ':'.params.port
+  if has_key(url, 'user')
+    let presto_params.user = url.user
   endif
-  if has_key(params, 'user')
-    let presto_params.user = params.user
-  endif
-  if has_key(params, 'path')
-    let path = split(params.path, '/')
+  if has_key(url, 'path')
+    let path = split(url.path, '/')
     if len(path) >= 1
       let presto_params.catalog = path[0]
     end
