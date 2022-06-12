@@ -1,32 +1,32 @@
 let s:cmd = !executable('presto') && executable('trino') ? 'trino' : 'presto'
-function! s:command_for_url(params) abort
+function! s:command_for_url(options) abort
   let cmd = [s:cmd]
-  for [k, v] in items(a:params)
+  for [k, v] in items(a:options)
     call extend(cmd, ['--' . k, v])
   endfor
   return cmd
 endfunction
 
-function! s:params(url) abort
+function! s:options(url) abort
   let url = db#url#parse(a:url)
-  let presto_params = {}
-  let presto_params.server = get(url, 'host', 'localhost')
+  let options = {}
+  let options.server = get(url, 'host', 'localhost')
   if has_key(url, 'port')
-    let presto_params.server .= ':' . url.port
+    let options.server .= ':' . url.port
   endif
   if has_key(url, 'user')
-    let presto_params.user = url.user
+    let options.user = url.user
   endif
   if has_key(url, 'path')
     let path = split(url.path, '/')
     if len(path) >= 1
-      let presto_params.catalog = path[0]
+      let options.catalog = path[0]
     end
     if len(path) == 2
-      let presto_params.schema = path[1]
+      let options.schema = path[1]
     endif
   endif
-  return presto_params
+  return options
 endfunction
 
 function! db#adapter#presto#interactive(url) abort
@@ -39,22 +39,22 @@ endfunction
 
 function! db#adapter#presto#complete_opaque(url) abort
   let prefix = ''
-  let params = s:params(a:url)
-  let base = '//'.params.server
-  let has_catalog = has_key(params, 'catalog')
-  let has_schema = has_key(params, 'schema')
+  let options = s:options(a:url)
+  let base = '//'.options.server
+  let has_catalog = has_key(options, 'catalog')
+  let has_schema = has_key(options, 'schema')
   if (!has_catalog && a:url =~ '/$') || (has_catalog && !has_schema && a:url !~ '/$')
     let lookup = 'CATALOGS'
     if has_catalog
-      let prefix = params.catalog
-      unlet params.catalog
+      let prefix = options.catalog
+      unlet options.catalog
     endif
   elseif (has_catalog && !has_schema && a:url =~ '/$') || has_schema
     let lookup = 'SCHEMAS'
-    let base .= '/'.params.catalog
+    let base .= '/'.options.catalog
     if has_schema
-      let prefix = params.schema
-      unlet params.schema
+      let prefix = options.schema
+      unlet options.schema
     end
   else
     return []
@@ -62,7 +62,7 @@ function! db#adapter#presto#complete_opaque(url) abort
   if prefix != ''
     let lookup .= " LIKE '".prefix."%'"
   endif
-  let out = db#systemlist(s:command_for_url(params) + ['--execute', 'SHOW '.lookup])
+  let out = db#systemlist(s:command_for_url(options) + ['--execute', 'SHOW '.lookup])
   let completions = map(out, 'base . "/" . substitute(v:val, "\"", "", "g")')
   return completions
 endfunction
