@@ -1,7 +1,7 @@
 function! s:command_for_url(params) abort
   let cmd = ['presto']
   for [k, v] in items(a:params)
-    call extend(cmd, '--' . k, v)
+    call extend(cmd, ['--' . k, v])
   endfor
   return cmd
 endfunction
