@@ -13,6 +13,7 @@ call extend(g:, {'db_adapters': {}}, 'keep')
 call extend(g:db_adapters, {
       \ 'sqlite3': 'sqlite',
       \ 'postgres': 'postgresql',
+      \ 'trino': 'presto',
       \ }, 'keep')
 
 call extend(g:, {'db_adapter_mongodb#srv': 'db#adapter#mongodb#'}, 'keep')
