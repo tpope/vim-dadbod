@@ -19,7 +19,7 @@ function! db#adapter#clickhouse#interactive(url) abort
     endif
   endfor
   return cmd +
-        \ db#url#as_argv(url, '--host=', '--port=', '', '--user=', '--port=', '--database=')
+        \ db#url#as_argv(url, '--host=', '--port=', '', '--user=', '--password=', '--database=')
 endfunction
 
 function! db#adapter#clickhouse#complete_opaque(_) abort
