@@ -8,9 +8,11 @@ function! db#adapter#clickhouse#canonicalize(url) abort
         \ 'database': 'database'})
 endfunction
 
+let s:cmd = !executable('clickhouse') && executable('clickhouse-client') ? ['clickhouse-client'] : ['clickhouse', 'client']
+
 function! db#adapter#clickhouse#interactive(url) abort
   let url = db#url#parse(a:url)
-  let cmd = ['clickhouse-client']
+  let cmd = copy(s:cmd)
   for [k, v] in items(url.params)
     if k !~# '^\%(multiline\|multiquery\|time\|stacktrace\|secure\)$' && v isnot# 1
       call add(cmd, '--' . k . '=' . v)
