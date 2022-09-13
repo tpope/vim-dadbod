@@ -132,7 +132,7 @@ function! s:canonicalize(url) abort
 endfunction
 
 function! db#cancel(...) abort
-  let buf = get(a:, 1, bufnr())
+  let buf = get(a:, 1, bufnr(''))
   return s:job_cancel(getbufvar(buf, 'db_job_id', ''))
 endfunction
 
