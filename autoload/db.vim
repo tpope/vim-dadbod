@@ -195,7 +195,11 @@ function! db#systemlist(cmd, ...) abort
   if !empty(job_result.status)
     return []
   endif
-  return job_result.content
+  if match(job_result.content[0], '\r$') > -1
+    return map(job_result.content, { _, val -> substitute(val, '\r$', '', '') })
+  else
+    return job_result.content
+  endif
 endfunction
 
 function! s:systemlist_with_err(cmd) abort
@@ -234,7 +238,11 @@ function! s:query_callback(query, lines, status) abort
   let was_outwin_focused = winnr ==? winnr()
   let status_msg = a:status ? 'DB: Query canceled after ' : 'DB: Query finished in '
   let status_msg .= time_in_sec
-  call writefile(a:lines, a:query.output, 'b')
+  if match(a:lines[0], '\r$') > -1
+    call writefile(map(a:lines, { _, val -> substitute(val, '\r$', '', '') }), a:query.output, 'b')
+  else
+    call writefile(a:lines, a:query.output, 'b')
+  endif
   call setbufvar(bufnr(a:query.output), '&modified', 0)
   call setbufvar(bufnr(a:query.output), 'db_job_id', '')
 
