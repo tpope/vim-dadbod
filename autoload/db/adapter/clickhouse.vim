@@ -41,7 +41,7 @@ function! db#adapter#clickhouse#can_echo(in, out) abort
   return len(out) == 1 && out[0] =~# '^Code: \d\+'
 endfunction
 
-function db#adapter#clickhouse#complete_database(url) abort
+function! db#adapter#clickhouse#complete_database(url) abort
   let cmd = db#adapter#clickhouse#interactive(substitute(a:url, '/[^/]*$', '/system', ''))
   return db#systemlist(cmd, 'SHOW DATABASES FORMAT TSV')
 endfunction
