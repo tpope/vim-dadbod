@@ -184,6 +184,9 @@ function! db#systemlist(cmd, ...) abort
   if !empty(job_result.status)
     return []
   endif
+  if len(job_result.content) && empty(job_result.content[-1])
+    call remove(job_result.content, -1)
+  endif
   return job_result.content
 endfunction
 
@@ -192,6 +195,9 @@ function! s:systemlist_with_err(cmd) abort
   let job_result = { 'content': [], 'status': 0 }
   let job = s:job_run(cmd, function('s:systemlist_job_cb', [job_result]), stdin_file)
   call s:job_wait(job)
+  if len(job_result.content) && empty(job_result.content[-1])
+    call remove(job_result.content, -1)
+  endif
   return [job_result.content, job_result.status]
 endfunction
 
