@@ -161,15 +161,11 @@ function! s:filter(url, in, ...) abort
 endfunction
 
 function! s:systemlist(cmd, ...) abort
-  if exists('*systemlist')
-    return call('systemlist', [s:shell(a:cmd)] + a:000)
-  else
-    let lines = split(call('system', [s:shell(a:cmd)] + a:000), "\n", 1)
-    if len(lines) && empty(lines[-1])
-      call remove(lines, -1)
-    endif
-    return lines
+  let lines = split(call('system', [s:shell(a:cmd)] + a:000), "\n", 1)
+  if len(lines) && empty(lines[-1])
+    call remove(lines, -1)
   endif
+  return lines
 endfunction
 
 function! db#systemlist(cmd, ...) abort
