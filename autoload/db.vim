@@ -598,12 +598,13 @@ function! db#clobber_dbext(...) abort
 endfunction
 
 function! s:vim_job.callback(job, data) dict abort
-  if type(a:data) ==? type(0)
-    let self.exit = 1
-    let self.exit_status = a:data
-    return self.call_on_finish_if_closed()
-  endif
   let self.output .= a:data
+endfunction
+
+function! s:vim_job.exit_cb(job, data) dict abort
+  let self.exit = 1
+  let self.exit_status = a:data
+  return self.call_on_finish_if_closed()
 endfunction
 
 function! s:vim_job.close_cb(channel) dict abort
@@ -654,7 +655,7 @@ function! s:job_run(cmd, on_finish, stdin_file, ...) abort
     let fn.on_finish = a:on_finish
     let opts = {
           \ 'callback': fn.callback,
-          \ 'exit_cb': fn.callback,
+          \ 'exit_cb': fn.exit_cb,
           \ 'close_cb': fn.close_cb,
           \ 'mode': 'raw'
           \ }
