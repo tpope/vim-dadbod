@@ -614,12 +614,10 @@ endfunction
 
 function! s:nvim_job_callback(jobid, data, event) dict abort
   if a:event ==? 'exit'
-    if len(self.output) && empty(self.output[-1])
-      call remove(self.output, -1)
-    endif
     return self.on_finish(self.output, a:data)
   endif
-  call extend(self.output, a:data)
+  let self.output[-1] .= a:data[0]
+  call extend(self.output, a:data[1:])
 endfunction
 
 function! s:job_run(cmd, on_finish, stdin_file, ...) abort
@@ -629,10 +627,8 @@ function! s:job_run(cmd, on_finish, stdin_file, ...) abort
           \ 'on_stdout': function('s:nvim_job_callback'),
           \ 'on_stderr': function('s:nvim_job_callback'),
           \ 'on_exit': function('s:nvim_job_callback'),
-          \ 'output': [],
+          \ 'output': [''],
           \ 'on_finish': a:on_finish,
-          \ 'stdout_buffered': 1,
-          \ 'stderr_buffered': 1,
           \ })
 
     if !empty(a:stdin_file) && filereadable(a:stdin_file)
