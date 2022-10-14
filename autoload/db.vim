@@ -608,11 +608,7 @@ endfunction
 
 function! s:vim_job.call_on_finish_if_closed() abort
   if self.close && self.exit
-    let output = split(self.output, "\n", 1)
-    if len(output) && empty(output[-1])
-      call remove(output, -1)
-    endif
-    return self.on_finish(output, self.exit_status)
+    return self.on_finish(split(self.output, "\n", 1), self.exit_status)
   endif
 endfunction
 
