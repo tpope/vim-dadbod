@@ -192,6 +192,9 @@ function! s:systemlist_with_err(cmd) abort
   let job_result = { 'content': [], 'status': 0 }
   let job = s:job_run(cmd, function('s:systemlist_job_cb', [job_result]), stdin_file)
   call s:job_wait(job)
+  if has('win32')
+    call map(job_result.content, { _, v -> substitute(v, "\r$", "", "") })
+  endif
   return [job_result.content, job_result.status]
 endfunction
 
