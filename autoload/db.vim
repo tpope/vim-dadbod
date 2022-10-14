@@ -184,9 +184,6 @@ function! db#systemlist(cmd, ...) abort
   if !empty(job_result.status)
     return []
   endif
-  if len(job_result.content) && empty(job_result.content[-1])
-    call remove(job_result.content, -1)
-  endif
   return job_result.content
 endfunction
 
@@ -195,9 +192,6 @@ function! s:systemlist_with_err(cmd) abort
   let job_result = { 'content': [], 'status': 0 }
   let job = s:job_run(cmd, function('s:systemlist_job_cb', [job_result]), stdin_file)
   call s:job_wait(job)
-  if len(job_result.content) && empty(job_result.content[-1])
-    call remove(job_result.content, -1)
-  endif
   return [job_result.content, job_result.status]
 endfunction
 
@@ -614,12 +608,19 @@ endfunction
 
 function! s:vim_job.call_on_finish_if_closed() abort
   if self.close && self.exit
-    return self.on_finish(split(self.output, "\n", 1), self.exit_status)
+    let output = split(self.output, "\n", 1)
+    if len(output) && empty(output[-1])
+      call remove(output, -1)
+    endif
+    return self.on_finish(output, self.exit_status)
   endif
 endfunction
 
 function! s:nvim_job_callback(jobid, data, event) dict abort
   if a:event ==? 'exit'
+    if len(self.output) && empty(self.output[-1])
+      call remove(self.output, -1)
+    endif
     return self.on_finish(self.output, a:data)
   endif
   call extend(self.output, a:data)
