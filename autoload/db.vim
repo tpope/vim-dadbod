@@ -179,7 +179,7 @@ endfunction
 
 function! db#systemlist(cmd, ...) abort
   let job_result = { 'content': [], 'status': 0 }
-  let job = s:job_run(a:cmd, function('s:systemlist_job_cb', [job_result]), get(a:, 1, ''))
+  let job = s:job_run(a:cmd, function('s:systemlist_job_cb', [job_result]), '', get(a:, 1, ''))
   call s:job_wait(job)
   if !empty(job_result.status)
     return []
@@ -624,7 +624,8 @@ function! s:nvim_job_cb(jobid, data, event) dict abort
   call extend(self.output, a:data)
 endfunction
 
-function! s:job_run(cmd, callback, stdin) abort
+function! s:job_run(cmd, callback, stdin_file, ...) abort
+  let stdin = get(a:, 1, '')
   if has('nvim')
     let jobid = jobstart(a:cmd, {
           \ 'on_stdout': function('s:nvim_job_cb'),
@@ -636,11 +637,11 @@ function! s:job_run(cmd, callback, stdin) abort
           \ 'stderr_buffered': 1,
           \ })
 
-    if !empty(a:stdin)
-      let stdin = a:stdin
-      if filereadable(stdin)
-        let stdin = readfile(stdin, 'b')
-      endif
+    if !empty(a:stdin_file) && filereadable(a:stdin_file)
+      let stdin = readfile(a:stdin_file, 'b')
+    endif
+
+    if !empty(stdin)
       call chansend(jobid, stdin)
       call chanclose(jobid, 'stdin')
     endif
@@ -665,11 +666,14 @@ function! s:job_run(cmd, callback, stdin) abort
 
     let job = job_start(a:cmd, opts)
 
-    if !empty(a:stdin)
-      let stdin = a:stdin
-      if filereadable(stdin)
-        let stdin = exists('*readblob') ? readblob(stdin) : readfile(stdin, 'B')
-      endif
+    if !empty(a:stdin_file) && filereadable(a:stdin_file)
+      let opts['in_io'] = 'file'
+      let opts['in_name'] = a:stdin_file
+      let fn.close = 1
+      let stdin = ''
+    endif
+
+    if !empty(stdin)
       call ch_sendraw(job, stdin)
       call ch_close_in(job)
       let fn.close = 1
