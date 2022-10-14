@@ -597,42 +597,42 @@ function! db#clobber_dbext(...) abort
   return opts
 endfunction
 
-function! s:vim_job.cb(job, data) dict abort
+function! s:vim_job.callback(job, data) dict abort
   if type(a:data) ==? type(0)
     let self.exit = 1
     let self.exit_status = a:data
-    return self.call_cb_if_finished()
+    return self.call_on_finish_if_closed()
   endif
   let self.output .= a:data
 endfunction
 
 function! s:vim_job.close_cb(channel) dict abort
   let self.close = 1
-  return self.call_cb_if_finished()
+  return self.call_on_finish_if_closed()
 endfunction
 
-function! s:vim_job.call_cb_if_finished() abort
+function! s:vim_job.call_on_finish_if_closed() abort
   if self.close && self.exit
-    return self.callback(split(self.output, "\n", 1), self.exit_status)
+    return self.on_finish(split(self.output, "\n", 1), self.exit_status)
   endif
 endfunction
 
-function! s:nvim_job_cb(jobid, data, event) dict abort
+function! s:nvim_job_callback(jobid, data, event) dict abort
   if a:event ==? 'exit'
-    return self.callback(self.output, a:data)
+    return self.on_finish(self.output, a:data)
   endif
   call extend(self.output, a:data)
 endfunction
 
-function! s:job_run(cmd, callback, stdin_file, ...) abort
+function! s:job_run(cmd, on_finish, stdin_file, ...) abort
   let stdin = get(a:, 1, '')
   if has('nvim')
     let jobid = jobstart(a:cmd, {
-          \ 'on_stdout': function('s:nvim_job_cb'),
-          \ 'on_stderr': function('s:nvim_job_cb'),
-          \ 'on_exit': function('s:nvim_job_cb'),
+          \ 'on_stdout': function('s:nvim_job_callback'),
+          \ 'on_stderr': function('s:nvim_job_callback'),
+          \ 'on_exit': function('s:nvim_job_callback'),
           \ 'output': [],
-          \ 'callback': a:callback,
+          \ 'on_finish': a:on_finish,
           \ 'stdout_buffered': 1,
           \ 'stderr_buffered': 1,
           \ })
@@ -651,11 +651,10 @@ function! s:job_run(cmd, callback, stdin_file, ...) abort
 
   if exists('*job_start')
     let fn = copy(s:vim_job)
-    let fn.callback = a:callback
+    let fn.on_finish = a:on_finish
     let opts = {
-          \ 'out_cb': fn.cb,
-          \ 'err_cb': fn.cb,
-          \ 'exit_cb': fn.cb,
+          \ 'callback': fn.callback,
+          \ 'exit_cb': fn.callback,
           \ 'close_cb': fn.close_cb,
           \ 'mode': 'raw'
           \ }
@@ -664,14 +663,14 @@ function! s:job_run(cmd, callback, stdin_file, ...) abort
       let opts['noblock'] = 1
     endif
 
-    let job = job_start(a:cmd, opts)
-
     if !empty(a:stdin_file) && filereadable(a:stdin_file)
       let opts['in_io'] = 'file'
       let opts['in_name'] = a:stdin_file
       let fn.close = 1
       let stdin = ''
     endif
+
+    let job = job_start(a:cmd, opts)
 
     if !empty(stdin)
       call ch_sendraw(job, stdin)
