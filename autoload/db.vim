@@ -681,28 +681,18 @@ function! s:job_run(cmd, on_finish, stdin_file, ...) abort
   throw 'DB: jobs not supported by this vim version.'
 endfunction
 
-function! s:job_wait(job, ...) abort
-  let timeout = get(a:, 1, -1)
-
+function! s:job_wait(job) abort
   if has('nvim')
-    return jobwait([a:job], timeout)[0] == -1 ? v:false : v:true
+    return jobwait([a:job])[0] == -1 ? v:false : v:true
   endif
 
-  let finished = v:true
   if exists('*job_status')
-    let ms = 0
-    let max = timeout
     while job_status(a:job) ==# 'run'
-      if ms == max
-        let finished = v:false
-        break
-      endif
-      let ms += 1
       sleep 1m
     endwhile
   endif
 
-  return finished
+  return v:true
 endfunction
 
 function! s:job_cancel(job) abort
