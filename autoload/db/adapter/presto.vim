@@ -30,7 +30,7 @@ function! s:options(url) abort
 endfunction
 
 function! db#adapter#presto#interactive(url) abort
-  return s:command_for_url(s:params(a:url))
+  return s:command_for_url(s:options(a:url))
 endfunction
 
 function! db#adapter#presto#input(url, in) abort
