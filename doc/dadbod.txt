@@ -88,7 +88,9 @@ bigquery ~
     bigquery://?dataset_id=publicdata:samples&format=sparse select count(*) from shakespeare
     bigquery://?use_legacy_sql=true sparse select count(*) from publicdata.samples.shakespeare
 <
-This adapter uses `bq` underhood.
+
+This adapter uses `bq` underhood which means that google sdk must be installed
+https://cloud.google.com/sdk/docs/install.
 
                                                 *dadbod-dbext*
 dbext ~
