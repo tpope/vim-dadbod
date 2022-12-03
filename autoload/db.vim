@@ -142,29 +142,29 @@ endfunction
 function! s:filter(url, in, ...) abort
   let prefer_filter = a:0 && a:1
   if db#adapter#supports(a:url, 'input') && !(prefer_filter && db#adapter#supports(a:url, 'filter'))
-    return db#adapter#dispatch(a:url, 'input', a:in)
+    return [db#adapter#dispatch(a:url, 'input', a:in), '']
   endif
   let op = db#adapter#supports(a:url, 'filter') ? 'filter' : 'interactive'
-  return s:shell(db#adapter#dispatch(a:url, op)) . ' ' .
-        \ db#adapter#call(a:url, 'input_flag', [], '< ') . shellescape(a:in)
+  return [db#adapter#dispatch(a:url, op), a:in]
 endfunction
 
-function! s:systemlist(cmd, ...) abort
-  let lines = split(call('system', [s:shell(a:cmd)] + a:000), "\n", 1)
+function! s:systemlist(cmd, file) abort
+  let cmd = s:shell(a:cmd) . (empty(a:file) ? '' : ' < ' . shellescape(a:file))
+  let lines = split(system(cmd), "\n", 1)
   if len(lines) && empty(lines[-1])
     call remove(lines, -1)
   endif
-  return lines
+  return [lines, v:shell_error]
 endfunction
 
-function! db#systemlist(cmd, ...) abort
-  let lines = call('s:systemlist', [a:cmd] + a:000)
-  return v:shell_error ? [] : lines
+function! db#systemlist(cmd) abort
+  let [lines, exit_status] = s:systemlist(a:cmd, '')
+  return exit_status ? [] : lines
 endfunction
 
 function! s:filter_write(url, in, out, prefer_filter) abort
-  let cmd = s:filter(a:url, a:in, a:prefer_filter)
-  let lines = s:systemlist(cmd)
+  let [cmd, file] = s:filter(a:url, a:in, a:prefer_filter)
+  let lines = s:systemlist(cmd, file)[0]
   if len(lines)
     call add(lines, '')
   endif
@@ -181,11 +181,11 @@ function! db#connect(url) abort
   let input = tempname()
   try
     call writefile(split(db#adapter#call(url, 'auth_input', [], "\n"), "\n", 1), input, 'b')
-    let out = join(s:systemlist(s:filter(url, input)), "\n")
-    if v:shell_error && out =~? pattern && resolved =~# '^[^:]*://[^:/@]*@'
+    let [out, exit_status] = call('s:systemlist', s:filter(url, input))
+    if exit_status && join(out, "\n") =~? pattern && resolved =~# '^[^:]*://[^:/@]*@'
       let password = inputsecret('Password: ')
       let url = substitute(resolved, '://[^:/@]*\zs@', ':'.db#url#encode(password).'@', '')
-      let out = join(s:systemlist(s:filter(url, input)), "\n")
+      let [out, exit_status] = call('s:systemlist', s:filter(url, input))
       if !v:shell_error
         let s:passwords[resolved] = password
       endif
@@ -193,10 +193,10 @@ function! db#connect(url) abort
   finally
     call delete(input)
   endtry
-  if !v:shell_error
+  if !exit_status
     return url
   endif
-  throw 'DB exec error: '.out
+  throw 'DB exec error: '.join(out, "\n")
 endfunction
 
 function! s:reload() abort
