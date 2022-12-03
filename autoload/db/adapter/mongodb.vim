@@ -45,11 +45,6 @@ function! db#adapter#mongodb#complete_database(url) abort
   return map(out, 'matchstr(v:val, "^\\S\\+$")')
 endfunction
 
-function! db#adapter#mongodb#can_echo(in, out) abort
-  let out = readfile(a:out, 2)
-  return len(out) == 1 && out[0] =~# '^WriteResult(.*)$\|^[0-9T:.-]\+ \w\+Error:'
-endfunction
-
 function! db#adapter#mongodb#tables(url) abort
   let cmd = db#adapter#mongodb#filter(a:url)
   let out = db#systemlist(cmd + ['--eval', 'db.getCollectionNames().join("\n")'])

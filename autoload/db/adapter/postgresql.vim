@@ -40,11 +40,6 @@ function! db#adapter#postgresql#complete_opaque(_) abort
   return db#adapter#postgresql#complete_database('')
 endfunction
 
-function! db#adapter#postgresql#can_echo(in, out) abort
-  let out = readfile(a:out, 2)
-  return len(out) == 1 && out[0] =~# '^[A-Z]\+\%( \d\+\| [A-Z]\+\)*$'
-endfunction
-
 function! db#adapter#postgresql#tables(url) abort
   return s:parse_columns(db#systemlist(
         \ db#adapter#postgresql#filter(a:url) + ['--no-psqlrc', '-tA', '-c', '\dtvm']), 1)

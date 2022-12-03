@@ -360,19 +360,7 @@ function! db#execute_command(mods, bang, line1, line2, cmd) abort
       call s:filter_write(conn, infile, outfile, exists('lines'))
       let query.finish_reltime = reltime()
       let query.reltime = reltime(query.start_reltime, query.finish_reltime)
-      if a:bang
-        silent execute mods 'split' outfile
-      else
-        if db#adapter#call(conn, 'can_echo', [infile, outfile], 0)
-          if v:shell_error
-            echohl ErrorMsg
-          endif
-          echo substitute(join(readfile(outfile), "\n"), "\n*$", '', '')
-          echohl NONE
-          return ''
-        endif
-        silent execute mods 'pedit' outfile
-      endif
+      silent exe mods (a:bang ? 'split' : 'pedit') fnameescape(outfile)
     endif
   catch /^DB exec error: /
     redraw

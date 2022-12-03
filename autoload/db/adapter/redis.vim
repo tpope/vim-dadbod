@@ -10,12 +10,6 @@ function! db#adapter#redis#interactive(url) abort
   return ['redis-cli'] + db#url#as_argv(a:url, '-h ', '-p ', '', '', '-a ', '-n ')
 endfunction
 
-function! db#adapter#redis#can_echo(in, out) abort
-  let out = readfile(a:out)
-  return out ==# ['OK'] ||
-        \ (len(out) <= 2 && empty(get(out, 1)) && get(out, 0) =~# '^ERR')
-endfunction
-
 function! db#adapter#redis#auth_input() abort
   return 'dbsize'
 endfunction
