@@ -81,21 +81,3 @@ function! db#adapter#bigquery#input(url, in) abort
 
   return out
 endfunction
-
-function! db#adapter#bigquery#complete_database(url) abort
-  let cmd = s:command_for_url(s:params(a:url))
-  let cmd .= ' ls '
-  echom "system" cmd
-  let out = system(cmd)
-  echom "out" out
-  let dbs = []
-
-  for i in split(out, "\n")
-    if len(i) > 2
-      call add(dbs, trim(i))
-    endif
-
-  endfor
-
-  return dbs
-endfunction
