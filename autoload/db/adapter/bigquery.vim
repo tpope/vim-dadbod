@@ -70,7 +70,7 @@ function! db#adapter#bigquery#input(url, in) abort
   let out = []
   if len(matchstr(a:in, '.sql'))
     let out += db#adapter#bigquery#interactive(a:url, 'query')
-    let out += [join(readfile(a:in), ' ')]
+    let out += ['--flagfile='.a:in]
   endif
   return out
 endfunction
