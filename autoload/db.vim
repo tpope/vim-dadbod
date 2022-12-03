@@ -139,17 +139,6 @@ function! s:shell(cmd) abort
   endif
 endfunction
 
-let s:temp_content = {}
-function! s:temp_content(str) abort
-  let key = '=' . a:str
-  if !has_key(s:temp_content, key)
-    let f = tempname()
-    call writefile(split(a:str, "\n", 1), f, 'b')
-    let s:temp_content[key] = f
-  endif
-  return s:temp_content[key]
-endfunction
-
 function! s:filter(url, in, ...) abort
   let prefer_filter = a:0 && a:1
   if db#adapter#supports(a:url, 'input') && !(prefer_filter && db#adapter#supports(a:url, 'filter'))
@@ -188,17 +177,22 @@ function! db#connect(url) abort
   if has_key(s:passwords, resolved)
     let url = substitute(resolved, '://[^:/@]*\zs@', ':'.db#url#encode(s:passwords[url]).'@', '')
   endif
-  let input = s:temp_content(db#adapter#call(url, 'auth_input', [], "\n"))
   let pattern = db#adapter#call(url, 'auth_pattern', [], 'auth\|login')
-  let out = join(s:systemlist(s:filter(url, input)), "\n")
-  if v:shell_error && out =~? pattern && resolved =~# '^[^:]*://[^:/@]*@'
-    let password = inputsecret('Password: ')
-    let url = substitute(resolved, '://[^:/@]*\zs@', ':'.db#url#encode(password).'@', '')
+  let input = tempname()
+  try
+    call writefile(split(db#adapter#call(url, 'auth_input', [], "\n"), "\n", 1), input, 'b')
     let out = join(s:systemlist(s:filter(url, input)), "\n")
-    if !v:shell_error
-      let s:passwords[resolved] = password
+    if v:shell_error && out =~? pattern && resolved =~# '^[^:]*://[^:/@]*@'
+      let password = inputsecret('Password: ')
+      let url = substitute(resolved, '://[^:/@]*\zs@', ':'.db#url#encode(password).'@', '')
+      let out = join(s:systemlist(s:filter(url, input)), "\n")
+      if !v:shell_error
+        let s:passwords[resolved] = password
+      endif
     endif
-  endif
+  finally
+    call delete(input)
+  endtry
   if !v:shell_error
     return url
   endif
