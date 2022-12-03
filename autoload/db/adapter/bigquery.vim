@@ -42,22 +42,17 @@ let g:bq_global_ops = [
   \ 'nouse_regional_endpoints',
   \ ]
 
-
 function! s:command_for_url(params, action) abort
   let cmd = ['bq']
   let subcmd = [a:action]
-
   for [k, v] in items(a:params)
     let op = '--'.k.'='.v
     if index(g:bq_global_ops, k) >= 0
-      " parse global options
       call add(cmd, op)
     else
-      " parse subcmd options
       call add(subcmd, op)
     endif
   endfor
-
   return cmd + subcmd
 endfunction
 
@@ -72,12 +67,10 @@ function! db#adapter#bigquery#interactive(url, action) abort
 endfunction
 
 function! db#adapter#bigquery#input(url, in) abort
-
   let out = []
   if len(matchstr(a:in, '.sql'))
     let out += db#adapter#bigquery#interactive(a:url, 'query')
-    let out += ['--flagfile=' . a:in]
+    let out += [join(readfile(a:in), ' ')]
   endif
-
   return out
 endfunction
