@@ -68,7 +68,6 @@ function! s:params(url) abort
 endfunction
 
 function! db#adapter#bigquery#interactive(url, action) abort
-  echom "Starting bigquery"
   return s:command_for_url(s:params(a:url), a:action)
 endfunction
 
