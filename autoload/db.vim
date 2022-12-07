@@ -157,9 +157,20 @@ function! s:systemlist(cmd, file) abort
   return [lines, v:shell_error]
 endfunction
 
-function! db#systemlist(cmd) abort
-  let [lines, exit_status] = s:systemlist(a:cmd, '')
-  return exit_status ? [] : lines
+function! db#systemlist(cmd, ...) abort
+  let file = ''
+  try
+    if a:0
+      let file = tempname()
+      call writefile(type(a:1) == v:t_string ? split(a:1, "\n", 1) : a:1, file, 'b')
+    endif
+    let [lines, exit_status] = s:systemlist(a:cmd, file)
+    return exit_status ? [] : lines
+  finally
+    if !empty(file)
+      call delete(file)
+    endif
+  endtry
 endfunction
 
 function! s:filter_write(url, in, out, prefer_filter) abort
