@@ -273,13 +273,44 @@ function! db#systemlist(cmd, ...) abort
   endtry
 endfunction
 
+function! s:check_job_running(bang) abort
+  let last_query = getbufvar(get(t:, 'db_last_preview_buffer', -1), 'db', {})
+  if !a:bang && exists('last_query.job')
+    throw 'DB: Query already running for this tab'
+  endif
+endfunction
+
 function! s:filter_write(query) abort
   let [cmd, file] = s:filter(a:query.db_url, a:query.input, a:query.prefer_filter)
-  let [lines, a:query.exit_status] = s:systemlist(cmd, file)
-  if len(lines)
-    call add(lines, '')
+  if !a:query.bang
+    call s:check_job_running(a:query.bang)
+    let t:db_last_preview_buffer = bufnr(a:query.output)
   endif
-  call writefile(lines, a:query.output, 'b')
+  if has_key(a:query, 'runtime')
+    call remove(a:query, 'runtime')
+  endif
+  echo 'DB: Running query...'
+  let a:query.job = s:job_run(cmd, function('s:query_callback', [a:query, reltime()]), file)
+endfunction
+
+function! s:query_callback(query, start_reltime, lines, status) abort
+  let job = remove(a:query, 'job')
+  let a:query.runtime = reltimefloat(reltime(a:start_reltime))
+  let a:query.exit_status = a:status
+  call writefile(a:lines, a:query.output, 'b')
+  let status_msg = 'DB: Query ' . string(a:query.output)
+  let status_msg .= a:status ? ' aborted after ' : ' finished in '
+  let status_msg .= printf('%.3fs', a:query.runtime)
+  let wins = win_findbuf(bufnr(a:query.output))
+  if !empty(wins)
+    let return_win = win_getid()
+    call win_gotoid(wins[0])
+    silent edit!
+    call win_gotoid(return_win)
+  elseif !get(a:query, 'canceled')
+    let status_msg .= ' (no window?)'
+  endif
+  echo status_msg
 endfunction
 
 function! db#connect(url) abort
@@ -312,7 +343,6 @@ endfunction
 
 function! s:reload() abort
   call s:filter_write(b:db)
-  edit!
 endfunction
 
 let s:url_pattern = '\%([abgltvw]:\w\+\|\a[[:alnum:].+-]\+:\S*\|\$[[:alpha:]_]\S*\|[.~]\=/\S*\|[.~]\|\%(type\|profile\)=\S\+\)\S\@!'
@@ -325,6 +355,14 @@ endfunction
 if !exists('s:inputs')
   let s:inputs = {}
 endif
+
+function! db#cancel(...) abort
+  let query = getbufvar(get(a:, 1, bufnr('')), 'db', '')
+  if exists('query.job')
+    let query.canceled = 1
+    call s:job_stop(query.job)
+  endif
+endfunction
 
 function! s:init() abort
   let query = get(s:inputs, b:db_input, {})
@@ -345,6 +383,7 @@ function! s:init() abort
   endif
   nnoremap <buffer><nowait> r :DB <C-R>=get(readfile(b:db_input, 1), 0)<CR>
   nnoremap <buffer><silent> R :call <SID>reload()<CR>
+  nnoremap <buffer><silent> <C-c> :call db#cancel()<CR>
 endfunction
 
 function! db#unlet() abort
@@ -401,6 +440,7 @@ function! db#execute_command(mods, bang, line1, line2, cmd) abort
         redraw!
       endif
     else
+      call s:check_job_running(a:bang)
       let file = tempname()
       let infile = file . '.' . db#adapter#call(conn, 'input_extension', [], 'sql')
       let outfile = file . '.' . db#adapter#call(conn, 'output_extension', [], 'dbout')
@@ -462,11 +502,14 @@ function! db#execute_command(mods, bang, line1, line2, cmd) abort
             \ 'prefer_filter': exists('lines'),
             \ }
       let s:inputs[infile] = query
+      call writefile([], outfile, 'b')
       execute 'autocmd BufReadPost' fnameescape(tr(outfile, '\', '/'))
             \ 'let b:db_input =' string(infile)
             \ '| call s:init()'
-      call s:filter_write(query)
+      execute 'autocmd BufUnload' fnameescape(tr(outfile, '\', '/'))
+            \ 'call db#cancel(str2nr(expand("<abuf>")))'
       silent exe mods a:bang ? 'split' : 'pedit' fnameescape(outfile)
+      call s:filter_write(query)
     endif
   catch /^DB exec error: /
     redraw
