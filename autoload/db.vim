@@ -371,7 +371,7 @@ function! db#execute_command(mods, bang, line1, line2, cmd) abort
       call s:filter_write(conn, infile, outfile, exists('lines'))
       let query.finish_reltime = reltime()
       let query.reltime = reltime(query.start_reltime, query.finish_reltime)
-      silent exe mods (a:bang ? 'split' : 'pedit') fnameescape(outfile)
+      silent exe mods a:bang ? 'split' : 'pedit' fnameescape(outfile)
     endif
   catch /^DB exec error: /
     redraw
