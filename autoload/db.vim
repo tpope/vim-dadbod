@@ -211,12 +211,7 @@ function! db#connect(url) abort
 endfunction
 
 function! s:reload() abort
-  if has_key(b:db, 'finish_reltime')
-    call remove(b:db, 'finish_reltime')
-  endif
-  let b:db.start_reltime = reltime()
   call s:filter_write(b:db)
-  let b:db.finish_reltime = reltime()
   edit!
 endfunction
 
@@ -367,10 +362,7 @@ function! db#execute_command(mods, bang, line1, line2, cmd) abort
       execute 'autocmd BufReadPost' fnameescape(tr(outfile, '\', '/'))
             \ 'let b:db_input =' string(infile)
             \ '| call s:init()'
-      let query.start_reltime = reltime()
       call s:filter_write(query)
-      let query.finish_reltime = reltime()
-      let query.reltime = reltime(query.start_reltime, query.finish_reltime)
       silent exe mods a:bang ? 'split' : 'pedit' fnameescape(outfile)
     endif
   catch /^DB exec error: /
