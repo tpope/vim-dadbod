@@ -3,7 +3,7 @@
 " Version:      1.4
 " GetLatestVimScripts: 5665 1 :AutoInstall: dadbod.vim
 
-if exists('g:loaded_dadbod') || &cp || v:version < 700
+if exists('g:loaded_dadbod') || &cp || v:version < 704
   finish
 endif
 let g:loaded_dadbod = 1
