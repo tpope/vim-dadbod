@@ -39,6 +39,9 @@ endfunction
 
 augroup dadbod
   autocmd!
+  if !has('nvim')
+    autocmd User DB* "
+  endif
   autocmd User dbextPreConnection
         \ if s:manage_dbext() | call db#clobber_dbext() | endif
   autocmd BufNewFile Result,Result-*
