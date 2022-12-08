@@ -148,13 +148,113 @@ function! s:filter(url, in, ...) abort
   return [db#adapter#dispatch(a:url, op), a:in]
 endfunction
 
-function! s:systemlist(cmd, file) abort
-  let cmd = s:shell(a:cmd) . (empty(a:file) ? '' : ' < ' . shellescape(a:file))
-  let lines = split(system(cmd), "\n", 1)
-  if len(lines) && empty(lines[-1])
-    call remove(lines, -1)
+function! s:vim_job_callback(state, job, data) abort
+  let a:state.data .= a:data
+endfunction
+
+function! s:vim_job_exit_cb(state, job, data) abort
+  let a:state.exit_status = a:data
+  call remove(a:state, 'job')
+  if ch_status(a:job) ==# 'closed'
+    call a:state.on_finish(split(a:state.data, "\n", 1), a:state.exit_status)
   endif
-  return [lines, v:shell_error]
+endfunction
+
+function! s:vim_job_close_cb(state, channel) abort
+  if has_key(a:state, 'exit_status')
+    call a:state.on_finish(split(a:state.data, "\n", 1), a:state.exit_status)
+  elseif has_key(a:state, 'job') && !has('patch-8.0.0050')
+    call job_info(a:state.job)
+  endif
+endfunction
+
+function! s:nvim_job_callback(lines, job_id, data, event) dict abort
+  let a:lines[-1] .= a:data[0]
+  call extend(a:lines, a:data[1:])
+endfunction
+
+function! s:job_run(cmd, on_finish, in_file) abort
+  if has('nvim')
+    let lines = ['']
+    let job = jobstart(a:cmd, {
+          \ 'on_stdout': function('s:nvim_job_callback', [lines]),
+          \ 'on_stderr': function('s:nvim_job_callback', [lines]),
+          \ 'on_exit': { id, status, _ -> a:on_finish(lines, status) },
+          \ })
+
+    if filereadable(a:in_file)
+      call chansend(job, readfile(a:in_file, 'b'))
+    endif
+    call chanclose(job, 'stdin')
+
+    return job
+  endif
+
+  if exists('*ch_close_in')
+    let state = {
+          \ 'on_finish': a:on_finish,
+          \ 'data': ''}
+    let opts = {
+          \ 'callback': function('s:vim_job_callback', [state]),
+          \ 'exit_cb': function('s:vim_job_exit_cb', [state]),
+          \ 'close_cb': function('s:vim_job_close_cb', [state]),
+          \ 'in_io': 'null',
+          \ 'mode': 'raw'
+          \ }
+    if filereadable(a:in_file)
+      let opts.in_io = 'file'
+      let opts.in_name = a:in_file
+    endif
+    let state.job = job_start(a:cmd, opts)
+    return state.job
+  endif
+
+  throw 'DB: jobs not supported by this Vim version'
+endfunction
+
+function! s:job_stop(job) abort
+  if has('nvim')
+    return jobstop(a:job)
+  elseif exists('*job_stop')
+    return job_stop(a:job)
+  endif
+endfunction
+
+function! s:job_wait(job) abort
+  try
+    if has('nvim')
+      while jobwait([a:job], 0) == [-1]
+        sleep 1m
+      endwhile
+    elseif exists('*job_status')
+      while ch_status(a:job) !~# '^closed$\|^fail$' || job_status(a:job) ==# 'run'
+        sleep 1m
+      endwhile
+    endif
+    let finished = 1
+  finally
+    if !exists('finished')
+      call s:job_stop(a:job)
+    endif
+  endtry
+endfunction
+
+function! s:systemlist_job_cb(data, lines, status) abort
+  let a:data.lines = a:lines
+  if has('win32')
+    call map(a:data.lines, { _, v -> substitute(v, "\r$", "", "") })
+  endif
+  if empty(a:data.lines[-1])
+    call remove(a:data.lines, -1)
+  endif
+  let a:data.status = a:status
+endfunction
+
+function! s:systemlist(cmd, file) abort
+  let result = {}
+  let job = s:job_run(a:cmd, function('s:systemlist_job_cb', [result]), a:file)
+  call s:job_wait(job)
+  return [get(result, 'lines', []), get(result, 'status', -1)]
 endfunction
 
 function! db#systemlist(cmd, ...) abort
@@ -255,6 +355,9 @@ function! db#execute_command(mods, bang, line1, line2, cmd) abort
   if type(a:cmd) == type(0)
     " Error generating arguments
     return ''
+  endif
+  if !has('nvim') && !exists('*ch_close_in')
+    return 'echoerr "DB: Vim version with +job feature is required"'
   endif
   let mods = a:mods ==# '<mods>' ? '' : a:mods
   if mods !~# '\<\%(aboveleft\|belowright\|leftabove\|rightbelow\|topleft\|botright\|tab\)\>'
