@@ -173,13 +173,13 @@ function! db#systemlist(cmd, ...) abort
   endtry
 endfunction
 
-function! s:filter_write(url, in, out, prefer_filter) abort
-  let [cmd, file] = s:filter(a:url, a:in, a:prefer_filter)
-  let lines = s:systemlist(cmd, file)[0]
+function! s:filter_write(query) abort
+  let [cmd, file] = s:filter(a:query.db_url, a:query.input, a:query.prefer_filter)
+  let [lines, a:query.exit_status] = s:systemlist(cmd, file)
   if len(lines)
     call add(lines, '')
   endif
-  call writefile(lines, a:out, 'b')
+  call writefile(lines, a:query.output, 'b')
 endfunction
 
 function! db#connect(url) abort
@@ -215,7 +215,7 @@ function! s:reload() abort
     call remove(b:db, 'finish_reltime')
   endif
   let b:db.start_reltime = reltime()
-  call s:filter_write(b:db, b:db_input, expand('%:p'), b:db.prefer_filter)
+  call s:filter_write(b:db)
   let b:db.finish_reltime = reltime()
   edit!
 endfunction
@@ -368,7 +368,7 @@ function! db#execute_command(mods, bang, line1, line2, cmd) abort
             \ 'let b:db_input =' string(infile)
             \ '| call s:init()'
       let query.start_reltime = reltime()
-      call s:filter_write(conn, infile, outfile, exists('lines'))
+      call s:filter_write(query)
       let query.finish_reltime = reltime()
       let query.reltime = reltime(query.start_reltime, query.finish_reltime)
       silent exe mods a:bang ? 'split' : 'pedit' fnameescape(outfile)
