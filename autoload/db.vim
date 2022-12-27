@@ -289,6 +289,7 @@ function! s:filter_write(query) abort
   if has_key(a:query, 'runtime')
     call remove(a:query, 'runtime')
   endif
+  exe 'doautocmd <nomodeline> User ' . fnameescape(a:query.output . '/DBExecutePre')
   echo 'DB: Running query...'
   let a:query.job = s:job_run(cmd, function('s:query_callback', [a:query, reltime()]), file)
 endfunction
@@ -310,6 +311,7 @@ function! s:query_callback(query, start_reltime, lines, status) abort
   elseif !get(a:query, 'canceled')
     let status_msg .= ' (no window?)'
   endif
+  exe 'doautocmd <nomodeline> User ' . fnameescape(a:query.output . '/DBExecutePost')
   echo status_msg
 endfunction
 
