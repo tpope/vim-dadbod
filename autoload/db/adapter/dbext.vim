@@ -10,7 +10,7 @@ endfunction
 function! db#adapter#dbext#parse(spec) abort
   let spec = substitute(a:spec, '\c^dbext:', '', '')
   if spec !~# '[:=]'
-    let spec = 'profile='.url
+    let spec = 'profile='.spec
   endif
   let opts = {}
   for item in map(split(spec, '\\\@<!:'), 'split(v:val, "=", 1)')
@@ -25,7 +25,7 @@ function! db#adapter#dbext#parse(spec) abort
 endfunction
 
 function! db#adapter#dbext#canonicalize(url) abort
-  let in = db#adapter#dbext#parse(url)
+  let in = db#adapter#dbext#parse(a:url)
   if !has_key(in, 'type')
     throw 'DB: type required for dbext'
   endif
