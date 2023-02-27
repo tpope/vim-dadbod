@@ -81,6 +81,17 @@ Handling these parameters is up to the individual adapters.  By default,
 unrecognized parameters are ignored.  Pass Boolean parameters as the literal
 strings "true" and "false" (e.g., `?ssl=true`).
 
+                                                *dadbod-bigquery*
+bigquery ~
+>
+    bigquery://[?<option>=<value>][&<option>=<value>][...]
+    bigquery://?dataset_id=publicdata:samples&format=sparse select count(*) from shakespeare
+    bigquery://?use_legacy_sql=true sparse select count(*) from publicdata.samples.shakespeare
+<
+
+This adapter uses the `bq` command line tool, which means that the Google Cloud SDK must be installed.
+https://cloud.google.com/sdk/docs/install.
+
                                                 *dadbod-dbext*
 dbext ~
 >
