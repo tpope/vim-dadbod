@@ -324,7 +324,12 @@ function! db#connect(url) abort
   let pattern = db#adapter#call(url, 'auth_pattern', [], 'auth\|login')
   let input = tempname()
   try
-    call writefile(split(db#adapter#call(url, 'auth_input', [], "\n"), "\n", 1), input, 'b')
+    let auth_input = db#adapter#call(url, 'auth_input', [], "\n")
+    " Short-circuit the authentication if unnecessary for the adapter
+    if auth_input == v:false
+      return url
+    endif
+    call writefile(split(auth_input, "\n", 1), input, 'b')
     let [out, exit_status] = call('s:systemlist', s:filter(url, input))
     if exit_status && join(out, "\n") =~? pattern && resolved =~# '^[^:]*://[^:/@]*@'
       let password = inputsecret('Password: ')
