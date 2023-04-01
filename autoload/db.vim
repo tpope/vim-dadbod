@@ -174,6 +174,7 @@ function! s:nvim_job_callback(lines, job_id, data, event) dict abort
 endfunction
 
 function! s:job_run(cmd, on_finish, in_file) abort
+  let has_in_file = filereadable(a:in_file)
   if has('nvim')
     let lines = ['']
     let job = jobstart(a:cmd, {
@@ -182,7 +183,7 @@ function! s:job_run(cmd, on_finish, in_file) abort
           \ 'on_exit': { id, status, _ -> a:on_finish(lines, status) },
           \ })
 
-    if filereadable(a:in_file)
+    if has_in_file
       call chansend(job, readfile(a:in_file, 'b'))
     endif
     call chanclose(job, 'stdin')
@@ -198,14 +199,16 @@ function! s:job_run(cmd, on_finish, in_file) abort
           \ 'callback': function('s:vim_job_callback', [state]),
           \ 'exit_cb': function('s:vim_job_exit_cb', [state]),
           \ 'close_cb': function('s:vim_job_close_cb', [state]),
-          \ 'in_io': 'null',
           \ 'mode': 'raw'
           \ }
-    if filereadable(a:in_file)
+    if has_in_file
       let opts.in_io = 'file'
       let opts.in_name = a:in_file
     endif
     let state.job = job_start(a:cmd, opts)
+    if !has_in_file
+      call ch_close_in(state.job)
+    endif
     return state.job
   endif
 
