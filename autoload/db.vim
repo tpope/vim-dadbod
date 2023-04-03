@@ -324,11 +324,15 @@ function! db#connect(url) abort
   if has_key(s:passwords, resolved)
     let url = substitute(resolved, '://[^:/@]*\zs@', ':'.db#url#encode(s:passwords[url]).'@', '')
   endif
-  let pattern = db#adapter#call(url, 'auth_pattern', [], 'auth\|login')
   let input = tempname()
+  let filter = s:filter(url, input)
+  if !executable(get(filter[0], 0, ''))
+    throw "DB: '" . get(filter[0], 0, '') . "' executable not found"
+  endif
+  let pattern = db#adapter#call(url, 'auth_pattern', [], 'auth\|login')
   try
     call writefile(split(db#adapter#call(url, 'auth_input', [], "\n"), "\n", 1), input, 'b')
-    let [out, exit_status] = call('s:systemlist', s:filter(url, input))
+    let [out, exit_status] = call('s:systemlist', filter)
     if exit_status && join(out, "\n") =~? pattern && resolved =~# '^[^:]*://[^:/@]*@'
       let password = inputsecret('Password: ')
       let url = substitute(resolved, '://[^:/@]*\zs@', ':'.db#url#encode(password).'@', '')
