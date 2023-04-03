@@ -8,11 +8,11 @@ function! db#adapter#mongodb#canonicalize(url) abort
   return substitute(a:url, '^mongo\%(db\)\=:/\@!', 'mongodb:///', '')
 endfunction
 
-function! db#adapter#mongodb#input_extension() abort
+function! db#adapter#mongodb#input_extension(...) abort
   return 'js'
 endfunction
 
-function! db#adapter#mongodb#output_extension() abort
+function! db#adapter#mongodb#output_extension(...) abort
   return 'json'
 endfunction
 

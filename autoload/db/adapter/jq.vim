@@ -2,11 +2,11 @@ function! db#adapter#jq#canonicalize(url) abort
   return db#url#canonicalize_file(a:url)
 endfunction
 
-function! db#adapter#jq#input_extension() abort
+function! db#adapter#jq#input_extension(...) abort
   return 'jq'
 endfunction
 
-function! db#adapter#jq#output_extension() abort
+function! db#adapter#jq#output_extension(...) abort
   return 'json'
 endfunction
 

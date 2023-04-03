@@ -1,4 +1,4 @@
-function! db#adapter#redis#input_extension() abort
+function! db#adapter#redis#input_extension(...) abort
   return 'redis'
 endfunction
 
