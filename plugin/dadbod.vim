@@ -8,6 +8,10 @@ if exists('g:loaded_dadbod') || &cp || v:version < 704
 endif
 let g:loaded_dadbod = 1
 
+if !exists('g:daddb_redis_args')
+  let g:daddb_redis_args = []
+endif
+
 call extend(g:, {'db_adapters': {}}, 'keep')
 
 call extend(g:db_adapters, {
