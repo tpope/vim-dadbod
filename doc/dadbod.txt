@@ -169,6 +169,9 @@ Redis ~
 Redis doesn't have a username, so use a dummy one in the URL if a password is
 required.
 
+Query parameters such as `c`, `cert`, `key`, `cacert`, `capath`, `tls-ciphers` and
+`tls-ciphersuites` are passed as the corresponding command line options.
+
                                                 *dadbod-sqlserver*
 SQL Server ~
 >
