@@ -10,11 +10,14 @@ function! db#adapter#redis#interactive(url) abort
   let url = db#url#parse(a:url)
   let cmd = ['redis-cli']
   for [k, v] in items(url.params)
+    " Specifying only connection releated flag here, missing flags can be added later
     if k =~# '^\%(u\|r\|i\|d\|D\)$' && v isnot# 1
       call add(cmd, '-' . k . '=' . v)
-    elseif k =~# '^\%(sni\|cacert\|cacertdir\|cert\|key\|tls-ciphers\|tls-ciphersuites\|show-pushes\|lru-test\|rdb\|functions-rdb\|pipe-timeout\|memkeys-samples\|pattern\|quoted-pattern\|intrinsic-latency\|eval\|cluster\)$' && v isnot# 1
+    elseif k =~# '^\%(cert\|key\|cacert\|capath\|tls-ciphers\|tls-ciphersuites\)$' && v isnot# 1
       call add(cmd, '--' . k . '=' . v)
     elseif v =~# '^[1Tt]$'
+      " Some non-alias single char flags like `-c` needs to be passed
+      " with single hyphen `-` char
       if len(k) == 1
         call add(cmd, '-' . k)
       else
