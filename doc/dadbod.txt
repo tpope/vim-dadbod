@@ -84,13 +84,29 @@ strings "true" and "false" (e.g., `?ssl=true`).
                                                 *dadbod-bigquery*
 bigquery ~
 >
-    bigquery://[?<option>=<value>][&<option>=<value>][...]
-    bigquery://?dataset_id=publicdata:samples&format=sparse select count(*) from shakespeare
-    bigquery://?use_legacy_sql=true sparse select count(*) from publicdata.samples.shakespeare
+    bigquery://[?<globalflag>=<value>][&<globalflag>=<value>][...]
+    bigquery://?format=sparse select count(*) from publicdata.samples.shakespeare
+    bigquery://?dataset_id=publicdata:samples&format=json select count(*) from shakespeare
+    bigquery:[project]// select count(*) from publicdata.samples.shakespeare
+    bigquery:[project:dataset]// select count(*) from publicdata.samples.shakespeare
 <
+This adapter uses the `bq` command line tool provided by the Google Cloud SDK.
+Please ensure this is installed first as per: https://cloud.google.com/sdk/docs/install.
 
-This adapter uses the `bq` command line tool, which means that the Google Cloud SDK must be installed.
-https://cloud.google.com/sdk/docs/install.
+Please note that `bq` accepts both *global* flags and *command* flags for the
+`bq query` subcommand, however *only* global flags are currently supported as
+query parameters by dadbod. To specify subcommand defaults, please use your
+local `~/.biqgqueryrc`.
+
+The query *execution* project and default dataset may be specified in the address hostname
+as `bigquery:project:dataset` or as parameters. Please remember that the
+execution project differes in general from the data storage project, and you
+may wish to specify both a project and a `dataset_id` .
+
+For example, the following query will run in `your-exec-project` but resolve
+the table `shakespeare` to `dataset_id=publicdata:samples.shakespeare`:
+
+    `bigquery:your-exec-project//?dataset_id=publicdata:samples select count(*) from shakespeare`
 
                                                 *dadbod-dbext*
 dbext ~
