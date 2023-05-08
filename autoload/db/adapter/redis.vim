@@ -11,9 +11,7 @@ function! db#adapter#redis#interactive(url) abort
   let cmd = ['redis-cli']
   for [k, v] in items(url.params)
     " Specifying only connection releated flag here, missing flags can be added later
-    if k =~# '^\%(u\|r\|i\|d\|D\)$' && v isnot# 1
-      call add(cmd, '-' . k . '=' . v)
-    elseif k =~# '^\%(cert\|key\|cacert\|capath\|tls-ciphers\|tls-ciphersuites\)$' && v isnot# 1
+    if k =~# '^\%(cert\|key\|cacert\|capath\|tls-ciphers\|tls-ciphersuites\)$' && v isnot# 1
       call add(cmd, '--' . k . '=' . v)
     elseif v =~# '^[1Tt]$'
       " Some non-alias single char flags like `-c` needs to be passed
