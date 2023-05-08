@@ -1,4 +1,8 @@
 function! db#adapter#bigquery#auth_input() abort
+  " Return false to skip providing authentication credentials;
+  " instead use the default credentials in the environment when
+  " the bq CLI is run.
+  "   https://cloud.google.com/bigquery/docs/authentication
   return v:false
 endfunction
 
@@ -12,23 +16,25 @@ function! s:command_for_url(url, subcmd) abort
   " The query string will be converted to global bq CLI arguments, e.g.:
   "   bq --arg1=val1 --arg2=val2 [subcommand]
   "
+  " Note: if the project_id/dataset_id are supplied in both the
+  " hostname and params substrings, duplicate arguments will be
+  " passed to the bq CLI, which uses the last value supplied.
+
   let cmd = ['bq']
   let parsed = db#url#parse(a:url)
-  let host_targets = split(substitute(parsed.opaque, '/', '', 'g'), ':')
+  if has_key(parsed, 'opaque')
+    let host_targets = split(substitute(parsed.opaque, '/', '', 'g'), ':')
 
-  " If the host is specified as bigquery:project:dataset, then parse
-  " the optional (project, dataset) to supply them to the CLI.
-  if len(host_targets) == 2
-    call add(cmd, '--project_id=' . host_targets[0])
-    call add(cmd, '--dataset_id=' . host_targets[1])
-  elseif len(host_targets) == 1
-    call add(cmd, '--project_id=' . host_targets[0])
+    " If the host is specified as bigquery:project:dataset, then parse
+    " the optional (project, dataset) to supply them to the CLI.
+    if len(host_targets) == 2
+      call add(cmd, '--project_id=' . host_targets[0])
+      call add(cmd, '--dataset_id=' . host_targets[1])
+    elseif len(host_targets) == 1
+      call add(cmd, '--project_id=' . host_targets[0])
+    endif
   endif
 
-  " Supply the query string arguments as global CLI arguments.
-  " NB that if the project_id or dataset_id are supplied both in
-  " the hostname and as params, the duplicate arguments will be
-  " passed to the CLI (which uses the last value supplied)
   for [k, v] in items(parsed.params)
     let op = '--'.k.'='.v
     call add(cmd, op)
@@ -37,19 +43,17 @@ function! s:command_for_url(url, subcmd) abort
 endfunction
 
 function! db#adapter#bigquery#filter(url) abort
-  " Return a bq CLI command string to execute with the system bq CLI
-  " in interactive mode (i.e. by running `bq shell`).
+  " Return a bq CLI command string to execute with `bq query`.
   "
-  " For more information, please refer to the following documentation:
-  "  https://cloud.google.com/bigquery/docs/bq-command-line-tool#interactive
+  " For more information, please refer to:
+  "  https://cloud.google.com/bigquery/docs/running-queries#bq
   return s:command_for_url(a:url, 'query')
 endfunction
 
 function! db#adapter#bigquery#interactive(url) abort
-  " Return a bq CLI command string to execute with the system bq CLI
-  " in interactive mode (i.e. by running `bq shell`).
+  " Return a bq CLI command string to execute with `bq shell`.
   "
-  " For more information, please refer to the following documentation:
+  " For more information, please refer to:
   "  https://cloud.google.com/bigquery/docs/bq-command-line-tool#interactive
   return s:command_for_url(a:url, 'shell')
 endfunction
