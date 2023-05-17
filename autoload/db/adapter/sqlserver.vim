@@ -35,15 +35,30 @@ function! s:server(url) abort
         \ (has_key(a:url, 'port') ? ',' . a:url.port : '')
 endfunction
 
+function! s:get_value_from_url(url, param)
+    return get(a:url.params, a:param, get(a:url.params, toupper(a:param[0]) . a:param[1 : -1], '0'))
+endfunction
+
 function! s:boolean_param_flag(url, param, flag) abort
-  let value = get(a:url.params, a:param, get(a:url.params, toupper(a:param[0]) . a:param[1 : -1], '0'))
+  let value = s:get_value_from_url(a:url, a:param)
   return value =~# '^[1tTyY]' ? [a:flag] : []
+endfunction
+
+function! s:value_param_flag(url, param, flag) abort
+  let value = s:get_value_from_url(a:url, a:param)
+  return value == '0' ? [] : [a:flag, value]
 endfunction
 
 function! db#adapter#sqlserver#interactive(url) abort
   let url = db#url#parse(a:url)
+  " Legacy parameters left just for backward compatibility with older sqlcmd: secure and
+  " trustServerCertificate
   return ['env', 'SQLCMDPASSWORD=' . get(url, 'password', ''), 'sqlcmd', '-S', s:server(url)] +
-        \ s:boolean_param_flag(url, 'encrypt', '-N') +
+        \ s:value_param_flag(url, 'encrypt', '-N') +
+        \ s:value_param_flag(url, 'column-separator', '-s') +
+        \ s:value_param_flag(url, 'format', '-F') +
+        \ s:boolean_param_flag(url, 'trim-spaces', '-W') +
+        \ s:boolean_param_flag(url, 'secure', '-N') +
         \ s:boolean_param_flag(url, 'trustServerCertificate', '-C') +
         \ (has_key(url, 'user') ? [] : ['-E']) +
         \ db#url#as_argv(url, '', '', '', '-U ', '', '-d ')
