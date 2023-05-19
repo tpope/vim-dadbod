@@ -42,7 +42,7 @@ endfunction
 
 function! db#adapter#sqlserver#interactive(url) abort
   let url = db#url#parse(a:url)
-  return ['env', 'SQLCMDPASSWORD=' . get(url, 'password'), 'sqlcmd', '-S', s:server(url)] +
+  return ['env', 'SQLCMDPASSWORD=' . get(url, 'password', ''), 'sqlcmd', '-S', s:server(url)] +
         \ s:boolean_param_flag(url, 'encrypt', '-N') +
         \ s:boolean_param_flag(url, 'trustServerCertificate', '-C') +
         \ (has_key(url, 'user') ? [] : ['-E']) +
