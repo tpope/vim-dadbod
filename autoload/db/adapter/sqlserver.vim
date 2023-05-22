@@ -42,8 +42,9 @@ endfunction
 
 function! db#adapter#sqlserver#interactive(url) abort
   let url = db#url#parse(a:url)
+  let encrypt = get(url.params, 'encrypt', get(url.params, 'Encrypt', ''))
   return ['env', 'SQLCMDPASSWORD=' . get(url, 'password', ''), 'sqlcmd', '-S', s:server(url)] +
-        \ s:boolean_param_flag(url, 'encrypt', '-N') +
+        \ (empty(encrypt) ? [] : ['-N'] + (encrypt ==# '1' ? [] : [url.params.encrypt])) +
         \ s:boolean_param_flag(url, 'trustServerCertificate', '-C') +
         \ (has_key(url, 'user') ? [] : ['-E']) +
         \ db#url#as_argv(url, '', '', '', '-U ', '', '-d ')
