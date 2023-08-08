@@ -84,11 +84,7 @@ strings "true" and "false" (e.g., `?ssl=true`).
                                                 *dadbod-bigquery*
 bigquery ~
 >
-    bigquery://[?<globalflag>=<value>][&<globalflag>=<value>][...]
-    bigquery://?format=sparse select count(*) from publicdata.samples.shakespeare
-    bigquery://?dataset_id=publicdata:samples&format=json select count(*) from shakespeare
-    bigquery:[project]// select count(*) from publicdata.samples.shakespeare
-    bigquery:[project:dataset]// select count(*) from publicdata.samples.shakespeare
+    bigquery:[?<globalflag>=<value>][&<globalflag>=<value>][...]
 <
 This adapter uses the `bq` command line tool provided by the Google Cloud SDK.
 Please ensure this is installed first as per: https://cloud.google.com/sdk/docs/install.
@@ -106,7 +102,7 @@ may wish to specify both a project and a `dataset_id` .
 For example, the following query will run in `your-exec-project` but resolve
 the table `shakespeare` to `dataset_id=publicdata:samples.shakespeare`:
 
-    `bigquery:your-exec-project//?dataset_id=publicdata:samples select count(*) from shakespeare`
+    `bigquery:your-exec-project?dataset_id=publicdata:samples select count(*) from shakespeare`
 
                                                 *dadbod-dbext*
 dbext ~
