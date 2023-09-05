@@ -13,7 +13,7 @@ take on [dbext.vim][], improving on it on the following ways:
   - jq
   - MongoDB
   - MySQL
-  - Mariadb
+  - MariaDB
   - Oracle
   - osquery
   - PostgreSQL
