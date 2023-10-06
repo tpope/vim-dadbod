@@ -13,7 +13,7 @@ function! s:params(url) abort
     let impala_params.impalad = params.host
   endif
   if has_key(params, 'port')
-    let impala_params.impalad .= params.port
+    let impala_params.impalad .= ":".params.port
   endif
   if has_key(params, 'path')
     let path = split(params.path, '/')
