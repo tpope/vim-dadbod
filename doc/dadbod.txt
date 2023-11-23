@@ -92,7 +92,6 @@ The first form of the URL assumes your default dataset belongs to your default p
 
 Additional query parameters can be any valid global flag, for example, `&disable_ssl_validation=true`.  Note that subcommand flags are not supported as query parameters, but they can be specified in `~/.bigqueryrc`.
 
-
                                                 *dadbod-dbext*
 dbext ~
 >
