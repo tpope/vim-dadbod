@@ -8,6 +8,8 @@ if exists('g:loaded_dadbod') || &cp || v:version < 704
 endif
 let g:loaded_dadbod = 1
 
+let g:db_query_rows_limit = get(g:, 'db_query_rows_limit', 10000)
+
 call extend(g:, {'db_adapters': {}}, 'keep')
 
 call extend(g:db_adapters, {
