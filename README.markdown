@@ -10,6 +10,7 @@ take on [dbext.vim][], improving on it on the following ways:
 * Supports a modern array of backends, including NoSQL databases:
   - Big Query
   - ClickHouse
+  - DuckDB
   - Impala
   - jq
   - MongoDB
