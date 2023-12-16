@@ -6,7 +6,7 @@ function! db#adapter#duckdb#test_file(file) abort
   if getfsize(a:file) < 100
     return
   endif
-  let firstline = readfile(a:file, 1)[0]
+  let firstline = readfile(a:file, '', 1)[0]
   " DuckDB can also open SQLite databases
   if firstline[8:11] ==# 'DUCK' || firstline =~# '^SQLite format 3\n'
     return 1
