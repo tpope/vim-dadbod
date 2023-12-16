@@ -108,6 +108,16 @@ ClickHouse ~
 <
 Use the `secure` query parameter to enable TLS.
 
+                                                *dadbod-duckdb*
+DuckDB ~
+>
+    duckdb:relative/path
+    duckdb:/absolute/path
+    duckdb:C:/windows/path
+<
+An empty path portion uses an in-memory database, which is occasionally useful
+for an interactive invocation.
+
                                                 *dadbod-impala*
 Impala ~
 >
