@@ -407,7 +407,7 @@ function! s:init() abort
   if empty(maparg('gq', 'n'))
     exe 'nnoremap <buffer><silent>' (v:version < 704 ? '' : '<nowait>') 'gq :bdelete<CR>'
   endif
-  nnoremap <buffer><nowait> r :DB <C-R>=get(readfile(b:db_input, 1), 0)<CR>
+  nnoremap <buffer><nowait> r :DB <C-R>=get(readfile(b:db_input, '', 1), 0)<CR>
   nnoremap <buffer><silent> R :call <SID>reload()<CR>
   nnoremap <buffer><silent> <C-c> :call db#cancel()<CR>
 endfunction
@@ -500,7 +500,7 @@ function! db#execute_command(mods, bang, line1, line2, cmd) abort
           let lines = split(db#adapter#call(conn, 'massage', [str], str), "\n", 1)
         elseif !empty(maybe_infile)
           let lines = repeat([''], a:line1-1) +
-                \ readfile(expand(maybe_infile), a:line2)[(a:line1)-1 : -1]
+                \ readfile(expand(maybe_infile), '', a:line2)[(a:line1)-1 : -1]
         elseif a:line1 == 1 && a:line2 == line('$') && empty(cmd) && !&modified && filereadable(expand('%'))
           let infile = expand('%:p')
         else
