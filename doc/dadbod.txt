@@ -81,6 +81,17 @@ Handling these parameters is up to the individual adapters.  By default,
 unrecognized parameters are ignored.  Pass Boolean parameters as the literal
 strings "true" and "false" (e.g., `?ssl=true`).
 
+                                                *dadbod-bigquery*
+bigquery ~
+>
+    bigquery:[<project_id>[:<dataset_id>]][?...]
+    bigquery:?project_id=<project_id>&dataset_id=<dataset_id>[&...]
+<
+
+The first form of the URL assumes your default dataset belongs to your default project.  If it doesn't, use the second form.
+
+Additional query parameters can be any valid global flag, for example, `&disable_ssl_validation=true`.  Note that subcommand flags are not supported as query parameters, but they can be specified in `~/.bigqueryrc`.
+
                                                 *dadbod-dbext*
 dbext ~
 >
