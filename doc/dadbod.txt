@@ -72,6 +72,8 @@ t:db, b:db, $DATABASE_URL, and g:db will be used.  Suggested uses:
 Set a variable with |:let|, or use |:DB| to normalize the URL first:
 >
     :DB w:db = adapter://...
+
+You can use g:db#adapter#mysql#command to set the binary command to use when connecting, e.g. let g:db#adapter#mysql#command = 'mycli'
 <
 ADAPTERS                                        *dadbod-adapters*
 
