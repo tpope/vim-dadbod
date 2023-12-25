@@ -13,7 +13,17 @@ endfunction
 
 function! s:command_for_url(url) abort
   let params = db#url#parse(a:url).params
-  let command = ['mysql']
+  " check the global mysql client command first
+  " if it's not there, try the use the global variable g:db#adapter#mysql#command
+  " if that's not there, use the default mysql client command
+  
+  if executable('mysql')
+    let command = ['mysql']
+  elseif exists('g:db#adapter#mysql#command')
+    let command = [g:db#adapter#mysql#command]
+  else
+    let command = ['mysql']
+  endif
 
   for i in keys(params)
     let command += ['--'.i.'='.params[i]]
