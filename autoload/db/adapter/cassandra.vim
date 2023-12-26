@@ -18,7 +18,7 @@ function! s:command_for_url(url) abort
     let command += ['--'.i.'='.params[i]]
   endfor
 
-  return command + db#url#as_argv(a:url, '', '', '', '-u ', '-p', '')
+  return command + db#url#as_argv(a:url, '', '', '', '-u ', '-p', '-k')
 endfunction
 
 function! db#adapter#cassandra#interactive(url) abort
@@ -35,4 +35,18 @@ endfunction
 
 function! db#adapter#cassandra#complete_opaque(url) abort
   return db#adapter#cassandra#complete_database('cassandra:///')
+endfunction
+
+function! db#adapter#cassandra#complete_database(url) abort
+  let params = db#url#parse(a:url)
+  let query = "SELECT keyspace_name FROM system_schema.keyspaces WHERE keyspace_name='" . params['scheme'] . "'"
+  let tables = filter(map(db#systemlist(s:command_for_url(a:url) + ['-e', query]), 'trim(v:val)'), '!empty(v:val)')
+  return tables[2:-2]
+endfunction
+
+function! db#adapter#cassandra#tables(url) abort
+  let params = db#url#parse(a:url)
+  let query = "SELECT table_name FROM system_schema.tables WHERE keyspace_name='" . params['path'][1:] . "'"
+  let tables = filter(map(db#systemlist(s:command_for_url(a:url) + ['-e', query]), 'trim(v:val)'), '!empty(v:val)')
+  return tables[2:-2]
 endfunction
