@@ -337,7 +337,7 @@ function! db#connect(url) abort
       return url
     endif
     call writefile(split(auth_input, "\n", 1), input, 'b')
-    let [out, exit_status] = call('s:systemlist', s:filter(url, input))
+    let [out, exit_status] = call('s:systemlist', filter)
     if exit_status && join(out, "\n") =~? pattern && resolved =~# '^[^:]*://[^:/@]*@'
       let password = inputsecret('Password: ')
       let url = substitute(resolved, '://[^:/@]*\zs@', ':'.db#url#encode(password).'@', '')
