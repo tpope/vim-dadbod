@@ -1,10 +1,12 @@
+
 function! db#adapter#trilogy#canonicalize(url) abort
-  let url = substitute(a:url, '^trilogy:/\@!', 'mysql:///', '')
+  let url = substitute(a:url, '^trilogy:', 'mysql:', '')
   " JDBC
   let url = substitute(url, '//address=(\(.*\))\(/[^#]*\)', '\="//".submatch(2)."&".substitute(submatch(1), ")(", "\\&", "g")', '')
   let url = substitute(url, '[&?]', '?', '')
   " Fix for containers running on localhost
   let url = substitute(url, 'localhost', '127.0.0.1', '')
+
   return db#url#absorb_params(url, {
         \ 'user': 'user',
         \ 'password': 'password',
