@@ -140,6 +140,16 @@ MySQL ~
 Query parameters such as `login-path`, `protocol`, `ssl-ca`, `ssl-cert`, and
 `ssl-key` are passed as the corresponding command line options.
 
+                                                *dadbod-cassandra*
+Cassandra ~
+>
+    cassandra://[<user>[:<password>]@][<host>[:<port>]]/[<database>]
+    cassandra://[<user>[:<password>]@][<%2Fsocket%2Fpath>]/[<database>]
+    cassandra:[<database>]
+<
+Query parameters such as `login-path`, `protocol`, `ssl-ca`, `ssl-cert`, and
+`ssl-key` are passed as the corresponding command line options.
+
                                                 *dadbod-oracle*
 Oracle ~
 >
