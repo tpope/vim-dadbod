@@ -175,9 +175,18 @@ endfunction
 
 function! s:job_run(cmd, on_finish, in_file) abort
   let has_in_file = filereadable(a:in_file)
+  let env = {}
+  if get(a:cmd, 0, '') ==# 'env' && (has('patch-8.2.0239') || has('nvim'))
+    call remove(a:cmd, 0)
+    while get(a:cmd, 0) =~# '^\w\+='
+      let env[matchstr(a:cmd[0], '^\w\+')] = matchstr(a:cmd[0], '=\zs.*')
+      call remove(a:cmd, 0)
+    endwhile
+  endif
   if has('nvim')
     let lines = ['']
     let job = jobstart(a:cmd, {
+          \ 'env': env,
           \ 'on_stdout': function('s:nvim_job_callback', [lines]),
           \ 'on_stderr': function('s:nvim_job_callback', [lines]),
           \ 'on_exit': { id, status, _ -> a:on_finish(lines, status) },
@@ -204,6 +213,9 @@ function! s:job_run(cmd, on_finish, in_file) abort
     if has_in_file
       let opts.in_io = 'file'
       let opts.in_name = a:in_file
+    endif
+    if !empty(env)
+      let opts.env = env
     endif
     let state.job = job_start(a:cmd, opts)
     if !has_in_file
