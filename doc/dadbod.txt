@@ -26,7 +26,7 @@ USAGE                                           *dadbod* *:DB*
                         |g:dadbod_manage_dbext|.
 
 In the preview window, you can press "R" to rerun, "r" to interactively rerun,
-or "q" to close the window.
+or "gq" to close the window.
 
 URLS                                            *dadbod-urls*
 
