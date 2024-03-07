@@ -186,8 +186,9 @@ SQL Server ~
     sqlserver://[<user>[:<password>]@][<host>][:<port>]/[<database>]
     sqlserver://[<host>[:<port>]][;user=<user>][;...]
 <
-Supported query parameters are `secure` and `trustServerCertificate`, which
-correspond to connection properties of the same name.
+Supported query parameters are `authentication`, `secure` and `trustServerCertificate`,
+which correspond to connection properties of the same name. The `authentication`
+property is only supported when using `go-sqlcmd`.
 
 To set the `integratedSecurity` connection property and use a trusted
 connection, omit the user and password.

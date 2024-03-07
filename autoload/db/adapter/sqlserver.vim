@@ -48,6 +48,7 @@ function! db#adapter#sqlserver#interactive(url) abort
         \ (empty(encrypt) ? [] : ['-N'] + (encrypt ==# '1' ? [] : [url.params.encrypt])) +
         \ s:boolean_param_flag(url, 'trustServerCertificate', '-C') +
         \ (has_key(url, 'user') ? [] : ['-E']) +
+        \ (has_key(url.params, 'authentication') ? ['--authentication-method', url.params.authentication] : []) +
         \ db#url#as_argv(url, '', '', '', '-U ', '', '-d ')
 endfunction
 
