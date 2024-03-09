@@ -3,7 +3,7 @@ function! db#adapter#sqlite#canonicalize(url) abort
 endfunction
 
 function! db#adapter#sqlite#test_file(file) abort
-  if getfsize(a:file) >= 100 && readfile(a:file, 1)[0] =~# '^SQLite format 3\n'
+  if getfsize(a:file) >= 100 && readfile(a:file, '', 1)[0] =~# '^SQLite format 3\n'
     return 1
   endif
 endfunction
