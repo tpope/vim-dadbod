@@ -26,6 +26,20 @@ function! s:options(url) abort
       let options.schema = path[1]
     endif
   endif
+
+  if has_key(url.params,'keystore-path')
+    let options["keystore-path"] = url.params['keystore-path']
+  endif
+
+  if has_key(url.params, 'truststore-path')
+    let options['truststore-path'] = url.params['truststore-path']
+  endif
+
+  " not an actual trino/presto parameter this is used to get
+  " around incorrectly interpreting hosts with a sheme specified
+  if has_key(url.params, 'https')
+    let options.server = 'https://' . options.server
+  endif
   return options
 endfunction
 
