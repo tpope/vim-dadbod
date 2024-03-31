@@ -10,6 +10,7 @@ take on [dbext.vim][], improving on it on the following ways:
 * Supports a modern array of backends, including NoSQL databases:
   - Big Query
   - ClickHouse
+  - DynamoDB
   - Impala
   - jq
   - MongoDB
@@ -47,6 +48,13 @@ to pass to the database.  Results are displayed in a preview window.
     :DB sqlite:myfile.sqlite3 select count(*) from widgets
     :DB redis:/// CLIENT LIST
 
+DynamoDB uses profiles [Configuration and credential file settings][] as
+authentication
+
+* :DB dynamodb:// # use default profile
+* :DB dynamodb://profile_name
+* :DB dynamodb://profile_name@localhost:8888 # To connect on a local dynamodb instance
+
 Give a range to run part or all of the current buffer as a query.
 
     :%DB mysql://root@localhost/bazquux
@@ -79,6 +87,7 @@ try [dadbod-ui][].
 [heroku.vim]: https://tpope.io/vim/heroku.git
 [rails.vim]:  https://tpope.io/vim/rails.git
 [dadbod-ui]:  https://github.com/kristijanhusak/vim-dadbod-ui
+[Configuration and credential file settings]: https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-files.html
 
 ## Installation
 
