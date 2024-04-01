@@ -80,7 +80,6 @@ try [dadbod-ui][].
 [heroku.vim]: https://tpope.io/vim/heroku.git
 [rails.vim]:  https://tpope.io/vim/rails.git
 [dadbod-ui]:  https://github.com/kristijanhusak/vim-dadbod-ui
-[Configuration and credential file settings]: https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-files.html
 
 ## Installation
 
