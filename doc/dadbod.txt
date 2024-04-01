@@ -108,6 +108,20 @@ ClickHouse ~
 <
 Use the `secure` query parameter to enable TLS.
 
+                                                *dadbod-dynamodb*
+DynamoDB ~
+>
+    dynamodb://[<profile>@[host:port]]
+    dynamodb://[<profile>]
+    dynamodb://
+<
+
+Use @host:port to use on a local dynamodb instance, for real AWS 
+DynamoDB don't set any host and port.
+
+Use any AWS credential file accepted by `aws` cli by profile_name
+or environment variables before launching vim.
+
                                                 *dadbod-impala*
 Impala ~
 >

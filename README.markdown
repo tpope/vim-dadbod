@@ -48,13 +48,6 @@ to pass to the database.  Results are displayed in a preview window.
     :DB sqlite:myfile.sqlite3 select count(*) from widgets
     :DB redis:/// CLIENT LIST
 
-DynamoDB uses profiles [Configuration and credential file settings][] as
-authentication
-
-* :DB dynamodb:// # use default profile
-* :DB dynamodb://profile_name
-* :DB dynamodb://profile_name@localhost:8888 # To connect on a local dynamodb instance
-
 Give a range to run part or all of the current buffer as a query.
 
     :%DB mysql://root@localhost/bazquux
