@@ -19,7 +19,8 @@ function! s:command_for_url(url) abort
     let command += ['--'.i.'='.params[i]]
   endfor
 
-  return command + db#url#as_argv(a:url, '-h ', '-P ', '-S ', '-u ', '-p', '')
+  " -S only works for localhost, so force that, in case the default was overridden, e.g. in .my.cnf
+  return command + db#url#as_argv(a:url, '-h ', '-P ', '-h localhost -S ', '-u ', '-p', '')
 endfunction
 
 function! db#adapter#mysql#interactive(url) abort
