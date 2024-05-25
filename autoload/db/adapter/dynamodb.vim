@@ -26,7 +26,7 @@ endfunction
 function! db#adapter#dynamodb#input(url, in) abort
   if filereadable(a:in)
     let lines = readfile(a:in)
-    return s:command(a:url, 'json') + split(lines[0])
+    return ['sh', '-c'] + [join(s:command(a:url, 'json') + split(lines[0]))]
   endif
   return ['echo', 'no', 'command']
 endfunction
