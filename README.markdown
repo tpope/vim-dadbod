@@ -11,6 +11,7 @@ take on [dbext.vim][], improving on it on the following ways:
   - Big Query
   - ClickHouse
   - DynamoDB
+  - DuckDB
   - Impala
   - jq
   - MongoDB

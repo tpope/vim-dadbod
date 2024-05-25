@@ -122,6 +122,16 @@ DynamoDB don't set any host and port.
 Use any AWS credential file accepted by `aws` cli by profile_name
 or environment variables before launching vim.
 
+                                                *dadbod-duckdb*
+DuckDB ~
+>
+    duckdb:relative/path
+    duckdb:/absolute/path
+    duckdb:C:/windows/path
+<
+An empty path portion uses an in-memory database, which is occasionally useful
+for an interactive invocation.
+
                                                 *dadbod-impala*
 Impala ~
 >
