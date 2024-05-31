@@ -169,8 +169,22 @@ function! s:vim_job_close_cb(state, channel) abort
 endfunction
 
 function! s:nvim_job_callback(lines, job_id, data, event) dict abort
-  let a:lines[-1] .= a:data[0]
-  call extend(a:lines, a:data[1:])
+  if len(a:lines) < g:db_query_rows_limit
+    let a:lines[-1] .= a:data[0]
+    call extend(a:lines, a:data[1:])
+  else
+    " remove the last line that was written.
+    " since we're killing the process, it could have been stopped in the
+    " middle of a line. I have seen the case that it was stopped in the middle
+    " of a multibyte unicode glyph, resulting in invalid utf8 for the file,
+    " causing a fallback to latin1 encoding in vim and bad display.
+    " side-effect: this could be called multiple times as killing the process
+    " won't be instantaneous, this ensures the 'query aborted' message is
+    " printed only once.
+    call remove(a:lines, -1)
+    call extend(a:lines, ['Query aborted: it exceeded the rows limit'])
+    call s:job_stop(a:job_id)
+  endif
 endfunction
 
 function! s:job_run(cmd, on_finish, in_file) abort
