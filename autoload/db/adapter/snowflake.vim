@@ -2,12 +2,12 @@ if exists('g:autoloaded_db_snowflake')
   finish
 endif
 let g:autoloaded_db_snowflake = 1
-
+let s:no_timing_friendly = ['-o', 'friendly=false', '-o', 'timing=false']
 function! s:command_for_url(url) abort
   let url = db#url#parse(a:url)
   "extra options here turn off nonsense before/after results
   let cmd = (has_key(url, 'password') ? ['env', 'SNOWSQL_PWD=' . url.password] : []) +
-        \ ['snowsql', '-o', 'friendly=false', '-o', 'timing=false'] + 
+        \[ "snowsql" ] +
         \ db#url#as_argv(a:url, '-a ', '', '', '-u ', '','-d ')
   for i in keys(url.params)
     let cmd += ['--'.i.'='.url.params[i]]
@@ -15,13 +15,16 @@ function! s:command_for_url(url) abort
   return cmd
 endfunction
 
+function! db#adapter#snowflake#filter(url) abort
+  return s:command_for_url(a:url) + s:no_timing_friendly
+endfunction
+
 function! db#adapter#snowflake#interactive(url) abort
-  echomsg "starting snowsql. executing query"
   return s:command_for_url(a:url)
 endfunction
 
-function! db#adapter#snowflake#input_flag() abort
-  return ' -f '
+function! db#adapter#snowflake#input(url, in) abort
+  return db#adapter#snowflake#filter(a:url) + ['-f', a:in]
 endfunction
 
 function! db#adapter#snowflake#complete_opaque(url) abort
@@ -29,16 +32,14 @@ function! db#adapter#snowflake#complete_opaque(url) abort
 endfunction
 
 function! db#adapter#snowflake#complete_database(url) abort
-  let cmd = s:command_for_url(a:url)
-  let cmd .= ' --query "show databases"'
-  " if cmd looks to have no cli args, treat it as a string
-  let out = system(cmd)
-  let dbs = []
-  for i in split(out, "\n")
-    let dbname = split(i, "|")
-    if len(dbname) > 2
-      call add(dbs, trim(dbname[1])) 
-    endif
-  endfor
-  return dbs 
+  let pre = matchstr(a:url, '[^:]\+://.\{-\}/')
+  let cmd = s:command_for_url(pre) +
+      \['-q', 'show terse databases'] + 
+      \s:no_timing_friendly + 
+      \['-o', 'header=false', '-o', 'output_format=tsv'] 
+  " snowflake does not allow you to get only the database names out.
+  " querying names from information_schema requires an active warehouse,
+  " which defeats the purpose of having tab-completion here.
+  let out = map(db#systemlist(cmd), {_, v -> split(v, "\t")[1]})
+  return out
 endfunction
