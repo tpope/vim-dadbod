@@ -340,7 +340,7 @@ function! db#connect(url) abort
   let filter = s:filter(url, input)
   let exec = get(filter[0], 0, '')
   if exec ==# 'env'
-    for exec in filter[1 : -1]
+    for exec in filter[0][1 : -1]
       if exec !~# '='
         break
       endif
