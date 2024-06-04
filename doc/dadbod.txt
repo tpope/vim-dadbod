@@ -190,6 +190,20 @@ Redis ~
 Redis doesn't have a username, so use a dummy one in the URL if a password is
 required.
 
+                                                *dadbod-snowflake*
+Snowflake ~
+>
+    snowflake:://[<user>[:<password>]@[<accountname>]]/[<database>]
+<
+If password is not given, snowsql will default to the $SNOWSQL_PWD environment
+variable.
+
+Supported query parameters are connection parameters that can be passed to
+snowsql. `accountname`, `username` and `database` are already provided by the
+url. Other supported options can be found at
+`https://docs.snowflake.com/en/user-guide/snowsql-start#connection-syntax`
+
+
                                                 *dadbod-sqlserver*
 SQL Server ~
 >
