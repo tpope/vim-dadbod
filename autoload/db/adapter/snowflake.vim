@@ -1,14 +1,11 @@
-if exists('g:autoloaded_db_snowflake')
-  finish
-endif
-let g:autoloaded_db_snowflake = 1
 let s:no_timing_friendly = ['-o', 'friendly=false', '-o', 'timing=false']
+
 function! s:command_for_url(url) abort
   let url = db#url#parse(a:url)
   "extra options here turn off nonsense before/after results
   let cmd = (has_key(url, 'password') ? ['env', 'SNOWSQL_PWD=' . url.password] : []) +
-        \[ "snowsql" ] +
-        \ db#url#as_argv(a:url, '-a ', '', '', '-u ', '','-d ')
+      \ [ "snowsql" ] +
+      \ db#url#as_argv(a:url, '-a ', '', '', '-u ', '','-d ')
   for i in keys(url.params)
     let cmd += ['--'.i.'='.url.params[i]]
   endfor
@@ -20,6 +17,9 @@ function! db#adapter#snowflake#filter(url) abort
 endfunction
 
 function! db#adapter#snowflake#interactive(url) abort
+  " in neovim, this only spawns a terminal if vim-dispatch and
+  " vim-dispatch-neovim are installed. it also uses the snowflake LLM to
+  " handle autocompletion.
   return s:command_for_url(a:url)
 endfunction
 
@@ -34,9 +34,9 @@ endfunction
 function! db#adapter#snowflake#complete_database(url) abort
   let pre = matchstr(a:url, '[^:]\+://.\{-\}/')
   let cmd = s:command_for_url(pre) +
-      \['-q', 'show terse databases'] + 
-      \s:no_timing_friendly + 
-      \['-o', 'header=false', '-o', 'output_format=tsv'] 
+      \ ['-q', 'show terse databases'] + 
+      \ s:no_timing_friendly + 
+      \ ['-o', 'header=false', '-o', 'output_format=tsv'] 
   " snowflake does not allow you to get only the database names out.
   " querying names from information_schema requires an active warehouse,
   " which defeats the purpose of having tab-completion here.
