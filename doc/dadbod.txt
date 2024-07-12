@@ -26,7 +26,7 @@ USAGE                                           *dadbod* *:DB*
                         |g:dadbod_manage_dbext|.
 
 In the preview window, you can press "R" to rerun, "r" to interactively rerun,
-or "q" to close the window.
+or "gq" to close the window.
 
 URLS                                            *dadbod-urls*
 
@@ -107,6 +107,16 @@ ClickHouse ~
     clickhouse:[database]
 <
 Use the `secure` query parameter to enable TLS.
+
+                                                *dadbod-duckdb*
+DuckDB ~
+>
+    duckdb:relative/path
+    duckdb:/absolute/path
+    duckdb:C:/windows/path
+<
+An empty path portion uses an in-memory database, which is occasionally useful
+for an interactive invocation.
 
                                                 *dadbod-impala*
 Impala ~
@@ -196,8 +206,9 @@ SQL Server ~
     sqlserver://[<user>[:<password>]@][<host>][:<port>]/[<database>]
     sqlserver://[<host>[:<port>]][;user=<user>][;...]
 <
-Supported query parameters are `secure` and `trustServerCertificate`, which
-correspond to connection properties of the same name.
+Supported query parameters are `authentication`, `secure` and `trustServerCertificate`,
+which correspond to connection properties of the same name. The `authentication`
+property is only supported when using `go-sqlcmd`.
 
 To set the `integratedSecurity` connection property and use a trusted
 connection, omit the user and password.

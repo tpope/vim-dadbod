@@ -175,9 +175,18 @@ endfunction
 
 function! s:job_run(cmd, on_finish, in_file) abort
   let has_in_file = filereadable(a:in_file)
+  let env = {}
+  if get(a:cmd, 0, '') ==# 'env' && (has('patch-8.2.0239') || has('nvim'))
+    call remove(a:cmd, 0)
+    while get(a:cmd, 0) =~# '^\w\+='
+      let env[matchstr(a:cmd[0], '^\w\+')] = matchstr(a:cmd[0], '=\zs.*')
+      call remove(a:cmd, 0)
+    endwhile
+  endif
   if has('nvim')
     let lines = ['']
     let job = jobstart(a:cmd, {
+          \ 'env': env,
           \ 'on_stdout': function('s:nvim_job_callback', [lines]),
           \ 'on_stderr': function('s:nvim_job_callback', [lines]),
           \ 'on_exit': { id, status, _ -> a:on_finish(lines, status) },
@@ -204,6 +213,9 @@ function! s:job_run(cmd, on_finish, in_file) abort
     if has_in_file
       let opts.in_io = 'file'
       let opts.in_name = a:in_file
+    endif
+    if !empty(env)
+      let opts.env = env
     endif
     let state.job = job_start(a:cmd, opts)
     if !has_in_file
@@ -326,8 +338,16 @@ function! db#connect(url) abort
   endif
   let input = tempname()
   let filter = s:filter(url, input)
-  if !executable(get(filter[0], 0, ''))
-    throw "DB: '" . get(filter[0], 0, '') . "' executable not found"
+  let exec = get(filter[0], 0, '')
+  if exec ==# 'env'
+    for exec in filter[0][1 : -1]
+      if exec !~# '='
+        break
+      endif
+    endfor
+  endif
+  if !executable(exec)
+    throw "DB: '" . exec . "' executable not found"
   endif
   let pattern = db#adapter#call(url, 'auth_pattern', [], 'auth\|login')
   try
@@ -337,7 +357,7 @@ function! db#connect(url) abort
       return url
     endif
     call writefile(split(auth_input, "\n", 1), input, 'b')
-    let [out, exit_status] = call('s:systemlist', s:filter(url, input))
+    let [out, exit_status] = call('s:systemlist', filter)
     if exit_status && join(out, "\n") =~? pattern && resolved =~# '^[^:]*://[^:/@]*@'
       let password = inputsecret('Password: ')
       let url = substitute(resolved, '://[^:/@]*\zs@', ':'.db#url#encode(password).'@', '')
@@ -395,7 +415,7 @@ function! s:init() abort
   if empty(maparg('gq', 'n'))
     exe 'nnoremap <buffer><silent>' (v:version < 704 ? '' : '<nowait>') 'gq :bdelete<CR>'
   endif
-  nnoremap <buffer><nowait> r :DB <C-R>=get(readfile(b:db_input, 1), 0)<CR>
+  nnoremap <buffer><nowait> r :DB <C-R>=get(readfile(b:db_input, '', 1), 0)<CR>
   nnoremap <buffer><silent> R :call <SID>reload()<CR>
   nnoremap <buffer><silent> <C-c> :call db#cancel()<CR>
 endfunction
@@ -488,7 +508,7 @@ function! db#execute_command(mods, bang, line1, line2, cmd) abort
           let lines = split(db#adapter#call(conn, 'massage', [str], str), "\n", 1)
         elseif !empty(maybe_infile)
           let lines = repeat([''], a:line1-1) +
-                \ readfile(expand(maybe_infile), a:line2)[(a:line1)-1 : -1]
+                \ readfile(expand(maybe_infile), '', a:line2)[(a:line1)-1 : -1]
         elseif a:line1 == 1 && a:line2 == line('$') && empty(cmd) && !&modified && filereadable(expand('%'))
           let infile = expand('%:p')
         else
