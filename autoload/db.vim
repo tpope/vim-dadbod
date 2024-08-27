@@ -338,8 +338,16 @@ function! db#connect(url) abort
   endif
   let input = tempname()
   let filter = s:filter(url, input)
-  if !executable(get(filter[0], 0, ''))
-    throw "DB: '" . get(filter[0], 0, '') . "' executable not found"
+  let exec = get(filter[0], 0, '')
+  if exec ==# 'env'
+    for exec in filter[0][1 : -1]
+      if exec !~# '='
+        break
+      endif
+    endfor
+  endif
+  if !executable(exec)
+    throw "DB: '" . exec . "' executable not found"
   endif
   let pattern = db#adapter#call(url, 'auth_pattern', [], 'auth\|login')
   try
