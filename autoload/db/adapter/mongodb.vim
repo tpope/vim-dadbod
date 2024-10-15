@@ -30,8 +30,8 @@ function! db#adapter#mongodb#interactive(url) abort
         \ db#url#as_argv(url, '--host ', '--port ', '', '-u ', '-p ', '')
 endfunction
 
-function! db#adapter#mongodb#filter(url) abort
-  return db#adapter#mongodb#interactive(a:url) + ['--quiet']
+function! db#adapter#mongodb#input(url, in) abort
+  return db#adapter#mongodb#interactive(a:url) + ['--quiet', a:in]
 endfunction
 
 function! db#adapter#mongodb#complete_opaque(url) abort
@@ -49,4 +49,8 @@ function! db#adapter#mongodb#tables(url) abort
   let cmd = db#adapter#mongodb#filter(a:url)
   let out = db#systemlist(cmd + ['--eval', 'db.getCollectionNames().join("\n")'])
   return map(out, '"db.".matchstr(v:val, "^\\S\\+$")')
+endfunction
+
+function! db#adapter#mongodb#massage(input) abort
+	return 'printjson(' . a:input . ')'
 endfunction
