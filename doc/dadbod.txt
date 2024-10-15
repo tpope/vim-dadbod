@@ -193,16 +193,10 @@ required.
                                                 *dadbod-snowflake*
 Snowflake ~
 >
-    snowflake:://[<user>[:<password>]@[<accountname>]]/[<database>]
+    snowflake://[<user>[:<password>]@[<accountname>]]/[<database>]
 <
-If password is not given, snowsql will default to the $SNOWSQL_PWD environment
-variable.
-
-Supported query parameters are connection parameters that can be passed to
-snowsql. `accountname`, `username` and `database` are already provided by the
-url. Other supported options can be found at
-`https://docs.snowflake.com/en/user-guide/snowsql-start#connection-syntax`
-
+Query parameters can be used to set additional command line options (e.g.,
+`?warehouse=foo`).
 
                                                 *dadbod-sqlserver*
 SQL Server ~
