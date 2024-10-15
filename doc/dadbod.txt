@@ -193,7 +193,15 @@ Redis ~
 Redis doesn't have a username, so use a dummy one in the URL if a password is
 required.
 
-                                                *dadbod-sqlserver*
+                                                *dadbod-snowflake*
+Snowflake
+>
+    snowflake://[<accountname>.snowflakecomputing.com]/?[username=<username>&dbname=<dbname>&warehouse=<warehouse>]
+    snowflake:connection=[<connection-name>]
+<
+SnowSQL doesn't allow password as a parameter. Check snowsql documentation.
+
+                                               *dadbod-sqlserver*
 SQL Server ~
 >
     sqlserver://[<user>[:<password>]@][<host>][:<port>]/[<database>]
