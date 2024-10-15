@@ -88,9 +88,12 @@ bigquery ~
     bigquery:?project_id=<project_id>&dataset_id=<dataset_id>[&...]
 <
 
-The first form of the URL assumes your default dataset belongs to your default project.  If it doesn't, use the second form.
+The first form of the URL assumes your default dataset belongs to your default
+project.  If it doesn't, use the second form.
 
-Additional query parameters can be any valid global flag, for example, `&disable_ssl_validation=true`.  Note that subcommand flags are not supported as query parameters, but they can be specified in `~/.bigqueryrc`.
+Additional query parameters can be any valid global flag, for example,
+`&disable_ssl_validation=true`.  Subcommand flags are not supported as query
+parameters, but they can be specified in `~/.bigqueryrc`.
 
                                                 *dadbod-dbext*
 dbext ~
@@ -196,9 +199,10 @@ SQL Server ~
     sqlserver://[<user>[:<password>]@][<host>][:<port>]/[<database>]
     sqlserver://[<host>[:<port>]][;user=<user>][;...]
 <
-Supported query parameters are `authentication`, `secure` and `trustServerCertificate`,
-which correspond to connection properties of the same name. The `authentication`
-property is only supported when using `go-sqlcmd`.
+Supported query parameters are `authentication`, `secure` and
+`trustServerCertificate`, which correspond to connection properties of the
+same name. The `authentication` property is only supported when using
+`go-sqlcmd`.
 
 To set the `integratedSecurity` connection property and use a trusted
 connection, omit the user and password.
