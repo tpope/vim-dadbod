@@ -193,6 +193,14 @@ Redis ~
 Redis doesn't have a username, so use a dummy one in the URL if a password is
 required.
 
+                                                *dadbod-snowflake*
+Snowflake ~
+>
+    snowflake://[<user>[:<password>]@[<accountname>]]/[<database>]
+<
+Query parameters can be used to set additional command line options (e.g.,
+`?warehouse=foo`).
+
                                                 *dadbod-sqlserver*
 SQL Server ~
 >
