@@ -1,5 +1,5 @@
 function! db#adapter#md#canonicalize(url) abort
-  return db#url#canonicalize_file(a:url)
+  return a:url
 endfunction
 
 function! db#adapter#md#test_file(file) abort
