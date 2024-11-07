@@ -40,7 +40,7 @@ function! db#adapter#md#command(url) abort
 endfunction
 
 function! db#adapter#md#interactive(url) abort
-  return db#adapter#md#command(a:url) + ['-cmd', '.output', '-header']
+  return db#adapter#md#command(a:url) + ['-cmd', '.output']
 endfunction
 
 function! db#adapter#md#tables(url) abort
