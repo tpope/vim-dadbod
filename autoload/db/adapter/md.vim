@@ -2,17 +2,6 @@ function! db#adapter#md#canonicalize(url) abort
   return a:url
 endfunction
 
-function! db#adapter#md#test_file(file) abort
-  if getfsize(a:file) < 100
-    return
-  endif
-  let firstline = readfile(a:file, '', 1)[0]
-  " DuckDB can also open SQLite databases
-  if firstline[8:11] ==# 'DUCK' || firstline =~# '^SQLite format 3\n'
-    return 1
-  endif
-endfunction
-
 function! s:dbname(url) abort
   let parsed = db#url#parse(a:url)
   if has_key(parsed, 'opaque')
