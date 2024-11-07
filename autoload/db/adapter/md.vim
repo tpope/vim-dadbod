@@ -44,7 +44,7 @@ function! db#adapter#md#interactive(url) abort
 endfunction
 
 function! db#adapter#md#tables(url) abort
-  return split(join(db#systemlist(db#adapter#md#command(a:url) + ['-noheader', '.tables'])))
+  return split(join(db#systemlist(db#adapter#md#command(a:url) + ['-noheader', '-c', '.tables'])))
 endfunction
 
 function! db#adapter#md#massage(input) abort
