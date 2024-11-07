@@ -13,23 +13,27 @@ function! db#adapter#md#test_file(file) abort
   endif
 endfunction
 
-function! s:path(url) abort
-  let path = db#url#file_path(a:url)
-  if path =~# '^[\/]\=$'
-    if !exists('s:session')
-      let s:session = tempname() . '.duckdb'
-    endif
-    let path = s:session
+function! s:dbname(url) abort
+  let parsed = db#url#parse(a:url)
+  if has_key(parsed, 'opaque')
+    return parsed.opaque
   endif
-  return path
+  return ''
 endfunction
 
 function! db#adapter#md#dbext(url) abort
-  return {'dbname': s:path(a:url)}
+  return {'dbname': s:dbname(a:url)}
 endfunction
 
 function! db#adapter#md#command(url) abort
-  return ['duckdb', s:path(a:url)]
+  let dbname = s:dbname(a:url)
+  if dbname != ''
+    let attachment = "attach 'md:" . dbname . "'; use " . dbname . ";"
+  else
+    let attachment = "attach 'md:';"
+  endif
+  let cmd = ['duckdb', '-cmd', attachment]
+  return cmd
 endfunction
 
 function! db#adapter#md#interactive(url) abort
