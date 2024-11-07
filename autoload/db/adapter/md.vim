@@ -33,7 +33,7 @@ function! db#adapter#md#command(url) abort
 endfunction
 
 function! db#adapter#md#interactive(url) abort
-  return db#adapter#md#command(a:url) + ['-column', '-header']
+  return db#adapter#md#command(a:url) + ['-box', '-header']
 endfunction
 
 function! db#adapter#md#tables(url) abort
