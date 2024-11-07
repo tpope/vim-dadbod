@@ -26,18 +26,21 @@ function! db#adapter#md#dbext(url) abort
 endfunction
 
 function! db#adapter#md#command(url) abort
+  let cmd = ['duckdb']
   let dbname = s:dbname(a:url)
   if dbname != ''
-    let attachment = "attach 'md:" . dbname . "'; use " . dbname . ";"
+    let attach = ['-cmd', "attach 'md:" . dbname . "'"]
+    let use = ['-cmd', 'use ' . dbname]
+    let cmd = cmd + attach + use
   else
-    let attachment = "attach 'md:';"
+    let attach = ['-cmd', "attach 'md:'"]
+    let cmd = cmd + attach
   endif
-  let cmd = ['duckdb', '-cmd', attachment]
   return cmd
 endfunction
 
 function! db#adapter#md#interactive(url) abort
-  return db#adapter#md#command(a:url) + ['-box', '-header']
+  return db#adapter#md#command(a:url) + ['-cmd', '.output', '-header']
 endfunction
 
 function! db#adapter#md#tables(url) abort
