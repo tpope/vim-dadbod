@@ -147,7 +147,7 @@ Any valid MongoDB connection string URI can be used.
 MotherDuck ~
 >
     md:
-    md:database
+    md:[<database>]
 <
 MotherDuck authenticates using a token stored as an environment variable
 `motherduck_token`. If this environment variable is missing, all invocations
