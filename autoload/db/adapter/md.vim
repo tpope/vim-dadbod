@@ -18,8 +18,8 @@ function! db#adapter#md#command(url) abort
   let cmd = ['duckdb']
   let dbname = s:dbname(a:url)
   if dbname != ''
-    let attach = ['-cmd', "attach 'md:" . dbname . "'"]
-    let use = ['-cmd', 'use ' . dbname]
+    let attach = ['-cmd', "attach 'md:" . dbname . "' as " . '"' . dbname . '"']
+    let use = ['-cmd', "use '" . dbname . "'"]
     let cmd = cmd + attach + use
   else
     let attach = ['-cmd', "attach 'md:'"]
