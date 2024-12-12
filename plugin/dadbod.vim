@@ -18,6 +18,8 @@ call extend(g:db_adapters, {
 
 call extend(g:, {'db_adapter_mongodb#srv': 'db#adapter#mongodb#'}, 'keep')
 
+call extend(g:, {'db_adapter_rediss': 'db#adapter#redis#'}, 'keep')
+
 call extend(g:, {'dbext_schemes': {}}, 'keep')
 
 call extend(g:dbext_schemes, {
