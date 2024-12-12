@@ -28,7 +28,7 @@ function! db#adapter#mysql#interactive(url) abort
 endfunction
 
 function! db#adapter#mysql#filter(url) abort
-  return s:command_for_url(a:url) + ['-t']
+  return s:command_for_url(a:url) + ['-t', '--binary-as-hex']
 endfunction
 
 function! db#adapter#mysql#auth_pattern() abort

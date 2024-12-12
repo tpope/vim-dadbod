@@ -27,7 +27,7 @@ function! db#adapter#mariadb#interactive(url) abort
 endfunction
 
 function! db#adapter#mariadb#filter(url) abort
-  return s:command_for_url(a:url) + ['-t']
+  return s:command_for_url(a:url) + ['-t', '--binary-as-hex']
 endfunction
 
 function! db#adapter#mariadb#auth_pattern() abort
