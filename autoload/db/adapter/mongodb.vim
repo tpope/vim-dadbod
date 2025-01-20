@@ -50,3 +50,7 @@ function! db#adapter#mongodb#tables(url) abort
   let out = db#systemlist(cmd + ['--eval', 'db.getCollectionNames().join("\n")'])
   return map(out, '"db.".matchstr(v:val, "^\\S\\+$")')
 endfunction
+
+function! db#adapter#mongodb#massage(input) abort
+  return filter(copy(a:input), 'v:val !=# ""')
+endfunction
