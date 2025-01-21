@@ -517,7 +517,7 @@ function! db#execute_command(mods, bang, line1, line2, cmd) abort
             let lines[0] = cmd . ' ' . lines[0]
           endif
           let lines = extend(repeat([''], a:line1-1), lines)
-          if a:line > 1
+          if a:line1 > 1
             let lines = db#adapter#call(conn, 'massage', [lines], lines)
           endif
         endif
