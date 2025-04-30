@@ -2,7 +2,11 @@ let s:cmd = !executable('presto') && executable('trino') ? 'trino' : 'presto'
 function! s:command_for_url(options) abort
   let cmd = [s:cmd]
   for [k, v] in items(a:options)
-    call extend(cmd, ['--' . k, v])
+    if v != ''
+      call extend(cmd, ['--' . k, v])
+    else
+      call extend(cmd, ['--' . k])
+    endif
   endfor
   return cmd
 endfunction
@@ -13,15 +17,27 @@ function! s:options(url) abort
   let options.server = get(url, 'host', 'localhost')
   if has_key(url, 'port')
     let options.server .= ':' . url.port
+    if url.port ==# '443'
+      let protocol = 'https'
+    else
+      let protocol = 'http'
+    endif
+  else
+    let protocol = 'http'
   endif
+  let options.server = protocol . '://' . options.server
   if has_key(url, 'user')
     let options.user = url.user
+  endif
+  if has_key(url, 'password')
+    let $PRESTO_PASSWORD = url.password
+    let options.password = ""
   endif
   if has_key(url, 'path')
     let path = split(url.path, '/')
     if len(path) >= 1
       let options.catalog = path[0]
-    end
+    endif
     if len(path) == 2
       let options.schema = path[1]
     endif
@@ -55,7 +71,7 @@ function! db#adapter#presto#complete_opaque(url) abort
     if has_schema
       let prefix = options.schema
       unlet options.schema
-    end
+    endif
   else
     return []
   endif
