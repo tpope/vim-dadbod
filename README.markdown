@@ -15,6 +15,7 @@ take on [dbext.vim][], improving on it on the following ways:
   - jq
   - MongoDB
   - MySQL
+  - Cassandra
   - MariaDB
   - Oracle
   - osquery
