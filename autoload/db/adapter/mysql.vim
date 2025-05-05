@@ -49,3 +49,13 @@ endfunction
 function! db#adapter#mysql#tables(url) abort
   return db#systemlist(s:command_for_url(a:url) + ['-e', 'show tables'])[1:-1]
 endfunction
+
+function! db#adapter#mysql#procedures(url) abort
+  " return db#systemlist(s:command_for_url(a:url) + ['-e', 'SHOW PROCEDURE STATUS'])[1:-1]
+  return db#systemlist(s:command_for_url(a:url) + ['-N', '-e', 'select concat(db, ''.'', name) name from mysql.proc where db=database() and type=''PROCEDURE'''])[1:-1]
+endfunction
+
+function! db#adapter#mysql#functions(url) abort
+  " return db#systemlist(s:command_for_url(a:url) + ['-e', 'SHOW FUNCTION STATUS'])[1:-1]
+  return db#systemlist(s:command_for_url(a:url) + ['-N', '-e', 'select concat(db, ''.'', name) name from mysql.proc where db=database() and type=''FUNCTION'''])[1:-1]
+endfunction
