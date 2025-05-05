@@ -7,7 +7,8 @@ function! db#adapter#redis#canonicalize(url) abort
 endfunction
 
 function! db#adapter#redis#interactive(url) abort
-  return ['redis-cli'] + db#url#as_argv(a:url, '-h ', '-p ', '', '', '-a ', '-n ')
+  return ['redis-cli'] + g:daddb_redis_args +
+        \ db#url#as_argv(a:url, '-h ', '-p ', '', '', '-a ', '-n ')
 endfunction
 
 function! db#adapter#redis#auth_input() abort
