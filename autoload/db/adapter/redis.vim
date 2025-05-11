@@ -9,7 +9,7 @@ endfunction
 function! db#adapter#redis#interactive(url) abort
   let extra_args = []
   if a:url =~# '^rediss'
-    let extra_args = ['--tls']
+    call add(extra_args, '--tls')
   endif
 
   return ['redis-cli'] + db#url#as_argv(a:url, '-h ', '-p ', '', '--user ', '-a ', '-n ') + extra_args

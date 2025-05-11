@@ -192,11 +192,7 @@ Redis ~
     redis://[<user>[:<password>]@][<host>[:port]]/[<database-number>]
     rediss://[<user>[:<password>]@][<host>[:port]]/[<database-number>]
 <
-Redis now supports user and you can supply both the user and password in the
-url.  If you only need the password and no user, you can accomplish this by
-leaving the user portion of the url empty.
-
-Redis also supports tls using rediss://
+Use the redis: scheme to enable TLS.
 
                                                 *dadbod-snowflake*
 Snowflake ~
