@@ -25,6 +25,7 @@ call extend(g:, {'dbext_schemes': {}}, 'keep')
 call extend(g:dbext_schemes, {
       \ 'ASA': 'sybase',
       \ 'MYSQL': 'mysql',
+      \ 'TRILOGY': 'mysql',
       \ 'ORA': 'oracle',
       \ 'PGSQL': 'postgresql',
       \ 'SQLITE': 'sqlite',
