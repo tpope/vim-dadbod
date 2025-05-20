@@ -7,7 +7,12 @@ function! db#adapter#redis#canonicalize(url) abort
 endfunction
 
 function! db#adapter#redis#interactive(url) abort
-  return ['redis-cli'] + db#url#as_argv(a:url, '-h ', '-p ', '', '', '-a ', '-n ')
+  let extra_args = []
+  if a:url =~# '^rediss'
+    call add(extra_args, '--tls')
+  endif
+
+  return ['redis-cli'] + db#url#as_argv(a:url, '-h ', '-p ', '', '--user ', '-a ', '-n ') + extra_args
 endfunction
 
 function! db#adapter#redis#auth_input() abort

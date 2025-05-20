@@ -187,11 +187,12 @@ Presto ~
                                                 *dadbod-redis*
 Redis ~
 >
-    redis://[[unused[:<password>]@]<host>]/[<database-number>]
     redis:[<database-number>]
+    redis://[:<password>@][<host>[:port]]/[<database-number>]
+    redis://[<user>[:<password>]@][<host>[:port]]/[<database-number>]
+    rediss://[<user>[:<password>]@][<host>[:port]]/[<database-number>]
 <
-Redis doesn't have a username, so use a dummy one in the URL if a password is
-required.
+Use the redis: scheme to enable TLS.
 
                                                 *dadbod-snowflake*
 Snowflake ~

@@ -59,6 +59,6 @@ function! db#adapter#schemes() abort
   endif
   return map(
         \ split(globpath(escape(rtp, ' '), 'autoload/db/adapter/*.vim'), "\n"),
-        \ 'tr(fnamemodify(v:val, ":t:r"), "_", "-")') +
-        \ filter(map(keys(g:), 'matchstr(v:val, "^db_adapter_\\zs.*")'), 'len(v:val)')
+        \ 'tr(fnamemodify(v:val, ":t:r"), "_\\/", "-++")') +
+        \ filter(map(keys(g:), 'tr(matchstr(v:val, "^db_adapter_\\zs.*"), "#", "+")'), 'len(v:val)')
 endfunction
