@@ -313,7 +313,13 @@ function! s:query_callback(query, start_reltime, lines, status) abort
   let job = remove(a:query, 'job')
   let a:query.runtime = reltimefloat(reltime(a:start_reltime))
   let a:query.exit_status = a:status
-  call writefile(a:lines, a:query.output, 'b')
+  
+  let output_lines = a:lines
+  if exists('g:db_custom_formatter') && type(g:db_custom_formatter) == v:t_func
+    let output_lines = call(g:db_custom_formatter, [a:query.db_url, output_lines])
+  endif
+  
+  call writefile(output_lines, a:query.output, 'b')
   let status_msg = 'DB: Query ' . string(a:query.output)
   let status_msg .= a:status ? ' aborted after ' : ' finished in '
   let status_msg .= printf('%.3fs', a:query.runtime)

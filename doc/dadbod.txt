@@ -231,6 +231,23 @@ avoids this ambiguity.
 An empty path portion uses an in-memory database, which is occasionally useful
 for an interactive invocation.
 
+CUSTOM OUTPUT FORMATTING                       *g:db_custom_formatter*
+
+You can set a custom formatter function to process query results before they are
+displayed. The function should take two arguments: the database URL and the 
+array of output lines, and return the modified array of lines:
+>
+  function! MyFormatter(db_url, lines) abort
+    " Process output lines here
+    return processed_lines
+  endfunction
+  let g:db_custom_formatter = function('MyFormatter')
+<
+
+For instance, if your database query output contains records with newline characters 
+that are split into separate lines, you might want to join them back together
+for a more readable output.
+
 DBEXT MANAGEMENT                                *g:dadbod_manage_dbext*
 
 If you like Dadbod's configuration but need some of dbext's functionality, set
