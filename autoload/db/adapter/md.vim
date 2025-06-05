@@ -15,17 +15,10 @@ function! db#adapter#md#dbext(url) abort
 endfunction
 
 function! db#adapter#md#command(url) abort
-  let cmd = ['duckdb']
-  let dbname = s:dbname(a:url)
-  if dbname != ''
-    let attach = ['-cmd', "attach 'md:" . dbname . "' as " . '"' . dbname . '"']
-    let use = ['-cmd', "use '" . dbname . "'"]
-    let cmd = cmd + attach + use
-  else
-    let attach = ['-cmd', "attach 'md:'"]
-    let cmd = cmd + attach
+  if a:url != ''
+    return ['duckdb', a:url]
   endif
-  return cmd
+  return ['duckdb', 'md:']
 endfunction
 
 function! db#adapter#md#interactive(url) abort
