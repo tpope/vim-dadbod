@@ -143,6 +143,20 @@ MongoDB ~
 <
 Any valid MongoDB connection string URI can be used.
 
+                                                *dadbod-md*
+MotherDuck ~
+>
+    md:
+    md:[<database>]
+<
+MotherDuck authenticates using a token stored as an environment variable
+`motherduck_token`. If this environment variable is missing, all invocations
+will open a browser and prompt the user to login to the MotherDuck console.
+
+If the database is provided, it will be used as the default database (so
+queries do not have to specify a database. If not, queries must specify a
+database.
+
                                                 *dadbod-mysql*
 MySQL ~
 >
