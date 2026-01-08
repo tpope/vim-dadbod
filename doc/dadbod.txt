@@ -202,6 +202,8 @@ Snowflake ~
 Query parameters can be used to set additional command line options (e.g.,
 `?warehouse=foo`).
 
+Defaults to `snowsql`, set `let db_adapter_snowflake_use_cli = 1` to use
+`snow` cli instead.
                                                 *dadbod-sqlserver*
 SQL Server ~
 >
