@@ -173,6 +173,12 @@ function! s:nvim_job_callback(lines, job_id, data, event) dict abort
   call extend(a:lines, a:data[1:])
 endfunction
 
+if has("win32")
+  let s:win_utf8_fix = ['cmd', '/c', 'chcp', '65001', '>', 'nul', '&&']
+else
+  let s:win_utf8_fix = []
+endif
+
 function! s:job_run(cmd, on_finish, in_file) abort
   let has_in_file = filereadable(a:in_file)
   let env = {}
@@ -185,7 +191,7 @@ function! s:job_run(cmd, on_finish, in_file) abort
   endif
   if has('nvim')
     let lines = ['']
-    let job = jobstart(a:cmd, {
+    let job = jobstart(s:win_utf8_fix + a:cmd, {
           \ 'env': env,
           \ 'on_stdout': function('s:nvim_job_callback', [lines]),
           \ 'on_stderr': function('s:nvim_job_callback', [lines]),

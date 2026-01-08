@@ -45,7 +45,7 @@ function! db#adapter#sqlserver#interactive(url) abort
   let encrypt = get(url.params, 'encrypt', get(url.params, 'Encrypt', ''))
   let has_authentication = has_key(url.params, 'authentication')
   return (has_key(url, 'password') ? ['env', 'SQLCMDPASSWORD=' . url.password] : []) +
-        \ ['sqlcmd', '-S', s:server(url)] +
+        \ ['sqlcmd', '-f', 'i:65001,o:65001', '-S', s:server(url)] +
         \ (empty(encrypt) ? [] : ['-N'] + (encrypt ==# '1' ? [] : [url.params.encrypt])) +
         \ s:boolean_param_flag(url, 'trustServerCertificate', '-C') +
         \ (has_key(url, 'user') || has_authentication ? [] : ['-E']) +
