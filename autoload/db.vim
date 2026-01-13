@@ -305,7 +305,9 @@ function! s:filter_write(query) abort
     call remove(a:query, 'runtime')
   endif
   exe 'doautocmd <nomodeline> User ' . fnameescape(a:query.output . '/DBExecutePre')
-  echo 'DB: Running query...'
+  if !get(g:, 'db_quiet', 0)
+    echo 'DB: Running query...'
+  endif
   let a:query.job = s:job_run(cmd, function('s:query_callback', [a:query, reltime()]), file)
 endfunction
 
@@ -314,9 +316,12 @@ function! s:query_callback(query, start_reltime, lines, status) abort
   let a:query.runtime = reltimefloat(reltime(a:start_reltime))
   let a:query.exit_status = a:status
   call writefile(a:lines, a:query.output, 'b')
-  let status_msg = 'DB: Query ' . string(a:query.output)
-  let status_msg .= a:status ? ' aborted after ' : ' finished in '
-  let status_msg .= printf('%.3fs', a:query.runtime)
+
+  if !get(g:, 'db_quiet', 0)
+    let status_msg = 'DB: Query ' . string(a:query.output)
+    let status_msg .= a:status ? ' aborted after ' : ' finished in '
+    let status_msg .= printf('%.3fs', a:query.runtime)
+  endif
   let wins = win_findbuf(bufnr(a:query.output))
   if !empty(wins)
     let return_win = win_getid()
@@ -327,7 +332,9 @@ function! s:query_callback(query, start_reltime, lines, status) abort
     let status_msg .= ' (no window?)'
   endif
   exe 'doautocmd <nomodeline> User ' . fnameescape(a:query.output . '/DBExecutePost')
-  echo status_msg
+  if !get(g:, 'db_quiet', 0)
+    echo status_msg
+  endif
 endfunction
 
 function! db#connect(url) abort
