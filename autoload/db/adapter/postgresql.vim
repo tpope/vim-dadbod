@@ -44,3 +44,13 @@ function! db#adapter#postgresql#tables(url) abort
   return s:parse_columns(db#systemlist(
         \ db#adapter#postgresql#filter(a:url) + ['--no-psqlrc', '-tA', '-c', '\dtvm']), 1)
 endfunction
+
+function! db#adapter#postgresql#procedures(url) abort
+  return s:parse_columns(db#systemlist(
+        \ db#adapter#postgresql#filter(a:url) + ['--no-psqlrc', '-tA', '-c', '\dfp']), 1)
+endfunction
+
+function! db#adapter#postgresql#functions(url) abort
+  return s:parse_columns(db#systemlist(
+        \ db#adapter#postgresql#filter(a:url) + ['--no-psqlrc', '-tA', '-c', '\dfn']), 1)
+endfunction
