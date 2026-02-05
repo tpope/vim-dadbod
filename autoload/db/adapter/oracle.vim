@@ -14,7 +14,7 @@ endfunction
 
 function! db#adapter#oracle#interactive(url) abort
   let url = db#url#parse(a:url)
-  return [get(g:, 'dbext_default_ORA_bin', 'sqlplus'), '-L',
+  return [get(g:, 'dbext_default_ORA_bin', 'sqlplus' ), '-L',
         \ get(url, 'user', 'system') . '/' . get(url, 'password', 'oracle') .
         \ '@' . s:conn(url)]
 endfunction

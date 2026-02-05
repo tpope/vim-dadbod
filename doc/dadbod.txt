@@ -158,7 +158,9 @@ Oracle ~
 >
     oracle://[<user>[:<password>]@][<host>][:<port>]/[<database>]
     oracle:<user>/<password>@[//]<host>[:<port>]/<database>
-<
+
+Sqlplus is the default binary used to connect, to override and use sqlcl
+let g:dbext_default_ORA_bin = 'sql'
                                                 *dadbod-osquery*
 osquery ~
 >
