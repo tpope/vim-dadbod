@@ -121,6 +121,19 @@ DuckDB ~
 An empty path portion uses an in-memory database, which is occasionally useful
 for an interactive invocation.
 
+                                                *dadbod-googleads*
+Google Ads
+>
+    googleads://<customer_id>/
+    googleads:<customer_id>
+<
+Queries are executed by invoking:
+>
+    gaql <customer_id> <query>
+<
+See the `gaql` documentation (https://github.com/getyourguide/gaql-cli) for
+more details on authentication and configuration.
+
                                                 *dadbod-impala*
 Impala ~
 >
