@@ -313,10 +313,51 @@ function! s:query_callback(query, start_reltime, lines, status) abort
   let job = remove(a:query, 'job')
   let a:query.runtime = reltimefloat(reltime(a:start_reltime))
   let a:query.exit_status = a:status
-  call writefile(a:lines, a:query.output, 'b')
+
+  if a:query.db_url =~# '^mongodb'
+    let cleaned = []
+    for line in a:lines
+      if line =~# '^Atlas'
+        let idx = match(line, '>\s*')
+        if idx >= 0
+          let rest = strpart(line, idx + 1)
+          if !empty(trim(rest))
+            call add(cleaned, rest)
+          endif
+        endif
+      else
+        call add(cleaned, line)
+      endif
+    endfor
+
+    let flat = join(cleaned, "\n")
+    let last_idx = max([strridx(flat, ']'), strridx(flat, '}')])
+    if last_idx >= 0
+      let flat = strpart(flat, 0, last_idx + 1)
+    endif
+
+    let cleaned = split(trim(flat), "\n")
+
+    if executable('jq')
+      let jq_out = systemlist('jq .', flat)
+      if v:shell_error == 0
+        let lines_to_write = jq_out
+      else
+        let lines_to_write = cleaned
+      endif
+    else
+      let lines_to_write = cleaned
+    endif
+  else
+    let lines_to_write = a:lines
+  endif
+
+  call writefile(lines_to_write, a:query.output, 'b')
+
   let status_msg = 'DB: Query ' . string(a:query.output)
   let status_msg .= a:status ? ' aborted after ' : ' finished in '
   let status_msg .= printf('%.3fs', a:query.runtime)
+
   let wins = win_findbuf(bufnr(a:query.output))
   if !empty(wins)
     let return_win = win_getid()
@@ -326,6 +367,7 @@ function! s:query_callback(query, start_reltime, lines, status) abort
   elseif !get(a:query, 'canceled')
     let status_msg .= ' (no window?)'
   endif
+
   exe 'doautocmd <nomodeline> User ' . fnameescape(a:query.output . '/DBExecutePost')
   echo status_msg
 endfunction
