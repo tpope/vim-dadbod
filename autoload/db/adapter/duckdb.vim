@@ -37,7 +37,7 @@ function! db#adapter#duckdb#interactive(url) abort
 endfunction
 
 function! db#adapter#duckdb#tables(url) abort
-  return split(join(db#systemlist(db#adapter#duckdb#command(a:url) + ['-noheader', '.tables'])))
+  return split(join(db#systemlist(db#adapter#duckdb#command(a:url) + ['-csv', '-noheader', "SELECT table_name FROM information_schema.tables WHERE table_schema='main' ORDER BY table_name"])))
 endfunction
 
 function! db#adapter#duckdb#massage(input) abort
