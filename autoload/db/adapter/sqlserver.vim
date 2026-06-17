@@ -40,6 +40,21 @@ function! s:boolean_param_flag(url, param, flag) abort
   return value =~# '^[1tTyY]' ? [a:flag] : []
 endfunction
 
+function! s:params_as_args(params) abort
+    let args = []
+    for [param, value] in items(a:params)
+        let canonical = param !~# '\l' ? param : tolower(param[0]) . param[1 : -1]
+        if index(['encrypt', 'authentication', 'trustServerCertificate'], canonical) >= 0
+            continue
+        endif
+        call add(args, '--' . canonical)
+        if value isnot# 1 && value isnot# 'true'
+            call add(args, value)
+        endif
+    endfor
+    return args
+endfunction
+
 function! db#adapter#sqlserver#interactive(url) abort
   let url = db#url#parse(a:url)
   let encrypt = get(url.params, 'encrypt', get(url.params, 'Encrypt', ''))
@@ -50,6 +65,7 @@ function! db#adapter#sqlserver#interactive(url) abort
         \ s:boolean_param_flag(url, 'trustServerCertificate', '-C') +
         \ (has_key(url, 'user') || has_authentication ? [] : ['-E']) +
         \ (has_authentication ? ['--authentication-method', url.params.authentication] : []) +
+        \ s:params_as_args(url.params) +
         \ db#url#as_argv(url, '', '', '', '-U ', '', '-d ')
 endfunction
 
